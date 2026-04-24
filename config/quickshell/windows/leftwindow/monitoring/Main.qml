@@ -1,108 +1,97 @@
 // windows/leftwindow/monitoring/Main.qml
 
 import QtQuick
-
+import QtQuick.Layouts
+import QtQuick.Controls
 import "root:/components"
 import "root:/themes"
 import "root:/config/EventNames.js" as Events
 import "root:/config"
+import "../base"
 
-Rectangle {
-    id: monotoringMenu
+BaseMenuView {
+    id: monitoringMenu
     objectName: "monitoring"
-    color: "transparent"
-    implicitHeight: Screen.height - ThemeManager.selectedTheme.dimensions.barHeight
 
-    // width: ThemeManager.selectedTheme.dimensions.menuWidth
-    // spacing: ThemeManager.selectedTheme.dimensions.menuWidgetsSpacing
+    menuTitle: qsTr("System")
+    menuIcon: ""
+    showPrimaryAction: false
 
-    // This component is from the original code, keeping it as is.
+    // ─── Progresses كهيدر يتمرر مع المحتوى ──────────────────────
     Progresses {
-        id: progresses
-        anchors {
-            top: parent.top
-            // left: parent.left
-            // right: parent.right
-            // horizontalCenter: parent.horizontalCenter
-            leftMargin: ThemeManager.selectedTheme.dimensions.menuWidgetsMargin
-            rightMargin: ThemeManager.selectedTheme.dimensions.menuWidgetsMargin
+        width: parent.width
+    }
+
+    // ─── المحتوى ─────────────────────────────────────────────────
+    ColumnLayout {
+        Layout.fillWidth: true
+        Layout.margins: ThemeManager.selectedTheme.dimensions.menuWidgetsMargin
+        spacing: ThemeManager.selectedTheme.dimensions.menuWidgetsMargin
+
+        RowLayout {
+            Layout.fillWidth: true
+            spacing: ThemeManager.selectedTheme.dimensions.menuWidgetsMargin
+
+            ProcessTable {
+                id: cpuTable
+                Layout.fillWidth: true
+                title: "Cpu Usage"
+                command: [...App.scripts.python.systemDiagnosticsCommand, "--action", "cpu"]
+            }
+            ProcessTable {
+                id: ramTable
+                Layout.fillWidth: true
+                title: "Mem Usage"
+                command: [...App.scripts.python.systemDiagnosticsCommand, "--action", "ram"]
+            }
+        }
+
+        RowLayout {
+            Layout.fillWidth: true
+            spacing: ThemeManager.selectedTheme.dimensions.menuWidgetsMargin
+
+            TempTable {
+                id: tempTable
+                Layout.fillWidth: true
+                Layout.preferredHeight: 120
+            }
+            BatteryTable {
+                id: batteryTable
+                Layout.fillWidth: true
+                Layout.preferredHeight: 120
+            }
+        }
+
+        SystemMonitor {
+            id: systemMonitor
+            Layout.fillWidth: true
+            Layout.bottomMargin: ThemeManager.selectedTheme.dimensions.menuWidgetsMargin / 2
         }
     }
 
-    ProcessTable {
-        id: cpuTable
-        running: true
-        // showRows: 20
-        // command: ["python", ".config/quickshell/scripts/python/top_cpu_usage.py"]
-        command: App.scripts.python.topCpuUsageCommand
-        title: "Cpu Usage"
-        anchors {
-            top: progresses.bottom
-            left: progresses.left
-            topMargin: ThemeManager.selectedTheme.dimensions.menuWidgetsMargin
-        }
-    }
-
-    ProcessTable {
-        id: ramTable
-        interval: 1000 * 5
-        // interval: 300
-        running: true
-        // showRows: 20
-        // command: ["python", ".config/quickshell/scripts/python/top_ram_usage.py"]
-        command: App.scripts.python.topRamUsageCommand
-        title: "Mem Usage"
-
-        anchors {
-            top: progresses.bottom
-            right: progresses.right
-            topMargin: ThemeManager.selectedTheme.dimensions.menuWidgetsMargin
-        }
-    }
-
-    TempTable {
-        id: tempTable
-
-        anchors {
-            top: ramTable.bottom
-            right: cpuTable.right
-            topMargin: ThemeManager.selectedTheme.dimensions.menuWidgetsMargin
-        }
-    }
-
-    BatteryTable {
-        id: batteryTable
-
-        anchors {
-            top: ramTable.bottom
-            right: progresses.right
-            topMargin: ThemeManager.selectedTheme.dimensions.menuWidgetsMargin
-        }
-    }
-
+    // ─── دورة حياة القائمة ───────────────────────────────────────
     Component.onCompleted: {
-        EventBus.on(Events.OPEN_LEFTBAR, function () {
-            monotoringMenu.menuIsOpened();
-        });
-
-        EventBus.on(Events.CLOSE_LEFTBAR, function () {
-            monotoringMenu.menuIsClosed();
-        });
+        EventBus.on(Events.LEFT_MENU_IS_OPENED, () => monitoringMenu.menuIsOpened(), monitoringMenu);
+        EventBus.on(Events.LEFT_MENU_IS_CLOSED, () => monitoringMenu.menuIsClosed(), monitoringMenu);
     }
 
     function menuIsOpened() {
-        cpuTable.running = true;
-        ramTable.running = true;
-        tempTable.running = true;
-        batteryTable.running = true;
-        console.info("Start menu monotoring tables");
+        if (!cpuTable.running) {
+            cpuTable.running = true;
+            ramTable.running = true;
+            tempTable.running = true;
+            batteryTable.running = true;
+            console.info("Start menu monitoring tables");
+        }
     }
 
     function menuIsClosed() {
-        cpuTable.running = false;
-        ramTable.running = false;
-        tempTable.running = false;
-        batteryTable.running = false;
-        console.info("Stop menu monotoring tables");
+        if (cpuTable.running) {
+            cpuTable.running = false;
+            ramTable.running = false;
+            tempTable.running = false;
+            batteryTable.running = false;
+            console.info("Stop menu monitoring tables");
+        }
     }
 }

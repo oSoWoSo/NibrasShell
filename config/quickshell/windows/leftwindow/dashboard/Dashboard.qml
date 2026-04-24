@@ -5,6 +5,7 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import "root:/themes"
 import "root:/components"
+import ".."
 
 ColumnLayout {
     id: dashboardScroller
@@ -14,24 +15,27 @@ ColumnLayout {
     width: dashboardScroller.availableWidth
     spacing: ThemeManager.selectedTheme.dimensions.menuWidgetsMargin
 
+    Header {
+        id: dashboardHeader
+        Layout.fillWidth: true
+        // Layout.bottomMargin: ThemeManager.selectedTheme.dimensions.menuWidgetsMargin
+    }
+
     Themes {
         id: themes
         Layout.fillWidth: true
+        Layout.leftMargin: ThemeManager.selectedTheme.dimensions.menuWidgetsMargin
+        Layout.rightMargin: ThemeManager.selectedTheme.dimensions.menuWidgetsMargin
     }
 
     PowerProfiles {
         id: powerProfiles
         Layout.fillWidth: true
+        Layout.leftMargin: ThemeManager.selectedTheme.dimensions.menuWidgetsMargin
+        Layout.rightMargin: ThemeManager.selectedTheme.dimensions.menuWidgetsMargin
     }
 
     Item {
         Layout.fillHeight: true
-    }
-
-    PowerOptions {
-        id: powerOptions
-        Layout.fillWidth: true
-        // Layout.topMargin: 10 // يمكن إضافة مسافة علوية لبعض الفصل
-        Layout.bottomMargin: (ThemeManager.selectedTheme.dimensions.menuWidgetsMargin / 2) + 2
     }
 }

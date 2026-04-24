@@ -9,16 +9,18 @@ import org.kde.kirigami as Kirigami
 
 import "../../../components"
 import "../../../themes"
-import "root:/config/EventNames.js" as Events
 import "root:/config"
+import "root:/config/EventNames.js" as Events
+import "root:/config/ConstValues.js" as Consts
 
 MenuCard {
     id: root
 
-    title: "Themes & Customization"
+    title: qsTr("Themes & Customization")
     icon: ""
 
     property bool settingsExpanded: false
+    property int innerRadiusDiv: 4
 
     readonly property int fixedHeight: (grid.implicitHeight + settingsHeader.height + fullThemesRow.implicitHeight + fullThemesRow2.implicitHeight - 35) * 2
     height: settingsExpanded ? settingsLayout.implicitHeight + padding + fixedHeight : fixedHeight
@@ -32,75 +34,91 @@ MenuCard {
 
     ColumnLayout {
         id: mainLayout
-        spacing: 10
+        spacing: 7
 
         RowLayout {
             id: fullThemesRow
             Layout.fillWidth: true
-            spacing: 10 // مسافة بين البطاقات
+            spacing: 7
 
             ThemeSelectorCard {
                 Layout.fillWidth: true // مهم جدًا: اجعل البطاقة تملأ العرض
-                themeTitle: "Dracula"
+                themeTitle: qsTr("Dracula")
                 lightThemeName: "DraculaLight"
                 darkThemeName: "DraculaDark"
                 isSelected: ThemeManager.selectedTheme.themeName === lightThemeName || ThemeManager.selectedTheme.themeName === darkThemeName
+                bottomRightRadius: ThemeManager.selectedTheme.dimensions.elementRadius / (isSelected ? 1 : innerRadiusDiv)
+                bottomLeftRadius: ThemeManager.selectedTheme.dimensions.elementRadius / (isSelected ? 1 : innerRadiusDiv)
+                topRightRadius: ThemeManager.selectedTheme.dimensions.elementRadius / (isSelected ? 1 : innerRadiusDiv)
             }
 
             ThemeSelectorCard {
                 Layout.fillWidth: true // مهم جدًا: اجعل البطاقة تملأ العرض
-                themeTitle: "Catppuccin"
+                themeTitle: qsTr("Catppuccin")
                 lightThemeName: "CatppuccinLight"
                 darkThemeName: "CatppuccinDark"
 
                 isSelected: ThemeManager.selectedTheme.themeName === lightThemeName || ThemeManager.selectedTheme.themeName === darkThemeName
+                radius: ThemeManager.selectedTheme.dimensions.elementRadius / (isSelected ? 1 : innerRadiusDiv)
             }
 
             ThemeSelectorCard {
                 Layout.fillWidth: true // مهم جدًا: اجعل البطاقة تملأ العرض
-                themeTitle: "Material"
+                themeTitle: qsTr("Material")
                 lightThemeName: "M3Light"
                 darkThemeName: "M3Dark"
 
                 isSelected: ThemeManager.selectedTheme.themeName === lightThemeName || ThemeManager.selectedTheme.themeName === darkThemeName
+
+                bottomRightRadius: ThemeManager.selectedTheme.dimensions.elementRadius / (isSelected ? 1 : innerRadiusDiv)
+                bottomLeftRadius: ThemeManager.selectedTheme.dimensions.elementRadius / (isSelected ? 1 : innerRadiusDiv)
+                topLeftRadius: ThemeManager.selectedTheme.dimensions.elementRadius / (isSelected ? 1 : innerRadiusDiv)
             }
         }
 
         RowLayout {
             id: fullThemesRow2
             Layout.fillWidth: true
-            spacing: 10 // مسافة بين البطاقات
+            spacing: 7
 
             ThemeSelectorCard {
                 Layout.fillWidth: true // مهم جدًا: اجعل البطاقة تملأ العرض
-                themeTitle: "Nord"
+                themeTitle: qsTr("Nord")
                 lightThemeName: "NordLight"
                 darkThemeName: "NordDark"
 
                 isSelected: ThemeManager.selectedTheme.themeName === lightThemeName || ThemeManager.selectedTheme.themeName === darkThemeName
+
+                bottomRightRadius: ThemeManager.selectedTheme.dimensions.elementRadius / (isSelected ? 1 : innerRadiusDiv)
+                topRightRadius: ThemeManager.selectedTheme.dimensions.elementRadius / (isSelected ? 1 : innerRadiusDiv)
+                topLeftRadius: ThemeManager.selectedTheme.dimensions.elementRadius / (isSelected ? 1 : innerRadiusDiv)
             }
 
             ThemeSelectorCard {
                 Layout.fillWidth: true // مهم جدًا: اجعل البطاقة تملأ العرض
-                themeTitle: "Gruvbox"
+                themeTitle: qsTr("Gruvbox")
                 lightThemeName: "GruvboxLight"
                 darkThemeName: "GruvboxDark"
 
                 isSelected: ThemeManager.selectedTheme.themeName === lightThemeName || ThemeManager.selectedTheme.themeName === darkThemeName
+                radius: ThemeManager.selectedTheme.dimensions.elementRadius / (isSelected ? 1 : innerRadiusDiv)
             }
             ThemeSelectorCard {
                 Layout.fillWidth: true // مهم جدًا: اجعل البطاقة تملأ العرض
-                themeTitle: "Tokyo Night"
+                themeTitle: qsTr("Tokyo Night")
                 lightThemeName: "TokyoNightLight"
                 darkThemeName: "TokyoNightDark"
 
                 isSelected: ThemeManager.selectedTheme.themeName === lightThemeName || ThemeManager.selectedTheme.themeName === darkThemeName
+                topRightRadius: ThemeManager.selectedTheme.dimensions.elementRadius / (isSelected ? 1 : innerRadiusDiv)
+                topLeftRadius: ThemeManager.selectedTheme.dimensions.elementRadius / (isSelected ? 1 : innerRadiusDiv)
+                bottomLeftRadius: ThemeManager.selectedTheme.dimensions.elementRadius / (isSelected ? 1 : innerRadiusDiv)
             }
         }
 
         Label {
             id: singleThemeLabel
-            text: "Single Themes"
+            text: qsTr("Single Themes")
             font.pointSize: 10
             font.bold: true
             color: Kirigami.Theme.textColor
@@ -114,22 +132,34 @@ MenuCard {
             id: grid
             columns: 3
             Layout.fillWidth: true
-            columnSpacing: 10
-            rowSpacing: 10
+            columnSpacing: 7
+            rowSpacing: 7
 
             MButton {
-                text: "Colors"
-                onClicked: ThemeManager.requestLoadTheme("ColorsTheme")
+                text: qsTr("Colors")
+                onClicked: {
+                    ThemeManager.requestLoadTheme("ColorsTheme");
+                    closeMenu.start();
+                }
                 Layout.fillWidth: true
                 iconText: ""
                 isActive: ThemeManager.selectedTheme.themeName === "ColorsTheme"
+
+                topRightRadius: ThemeManager.selectedTheme.dimensions.elementRadius / (isActive ? Consts.M3_BUTTON_RADIUS_DIVISOR : innerRadiusDiv)
+                bottomRightRadius: ThemeManager.selectedTheme.dimensions.elementRadius / (isActive ? Consts.M3_BUTTON_RADIUS_DIVISOR : innerRadiusDiv)
             }
             MButton {
-                text: "Deer"
-                onClicked: ThemeManager.requestLoadTheme("DeerTheme")
+                text: qsTr("Deer")
+                onClicked: {
+                    ThemeManager.requestLoadTheme("DeerTheme");
+                    closeMenu.start();
+                }
                 Layout.fillWidth: true
                 iconText: ""
                 isActive: ThemeManager.selectedTheme.themeName === "DeerTheme"
+
+                bottomLeftRadius: ThemeManager.selectedTheme.dimensions.elementRadius / (isActive ? Consts.M3_BUTTON_RADIUS_DIVISOR : innerRadiusDiv)
+                topLeftRadius: ThemeManager.selectedTheme.dimensions.elementRadius / (isActive ? Consts.M3_BUTTON_RADIUS_DIVISOR : innerRadiusDiv)
             }
         }
 
@@ -198,6 +228,15 @@ MenuCard {
                     EventBus.emit(Events.CLOSE_LEFTBAR);
                 }
             }
+        }
+    }
+
+    Timer {
+        id: closeMenu
+        interval: 600
+        repeat: false
+        onTriggered: {
+            EventBus.emit(Events.CLOSE_LEFTBAR);
         }
     }
 }

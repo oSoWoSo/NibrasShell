@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+# TODO: -> split into several files and use clean code standard
+
 import json
 
 # --- Import necessary libraries ---
@@ -9,6 +11,9 @@ import shutil
 import subprocess
 import sys
 from datetime import datetime
+from pathlib import Path
+
+base_dir = Path(__file__).resolve().parent
 
 # --- Define colors for terminal output ---
 GREEN = "\033[0;32m"
@@ -23,9 +28,10 @@ MESSAGES = {
         "main_menu_title": "NibrasShell Installation Script",
         "install_deps_menu": "1. Install Dependencies",
         "install_local": "2. Install NibrasShell",
-        "uninstall": "3. Uninstall NibrasShell",
-        "create_config": "4. Create/Edit User Config",
-        "exit": "5. Exit",
+        "update_quickshell": "3. Update QuickShell",
+        "uninstall": "4. Uninstall NibrasShell",
+        "create_config": "5. Create/Edit User Config",
+        "exit": "6. Exit",
         "choose_option": "Choose an option: ",
         "distro_check_fail": "Error: This script only supports Fedora, Void and Arch Linux.",
         "installing_deps": "Installing dependencies...",
@@ -56,15 +62,29 @@ MESSAGES = {
         "prompt_country": "Enter your country: ",
         "prompt_use_prayer": "Enable prayer times widget? (y/n): ",
         "config_saved": "Configuration file saved to ~/.nibrasshell.json",
+        "updating_quickshell": "Updating QuickShell...",
+        "update_complete": "QuickShell update complete.",
+        "pulling_updates": "Pulling latest updates from git...",
+        "copying_files": "Copying QuickShell files...",
+        "dnf_error": "Error: DNF failed to install packages.",
+        "dnf_conflict_prompt": "How do you want to resolve the conflict?",
+        "opt_allow_erasing": "1. Allow erasing conflicting packages (--allowerasing)",
+        "opt_skip_broken": "2. Skip broken/conflicting packages (--skip-broken)",
+        "opt_cancel": "3. Cancel installation",
+        "gemini_api_key": "Enter Gemini API Key: ",
+        "music_ai_api_key": "Enter Gemini API Key For Music Analytics:",
+        "weather_ai_api_key": "Enter Gemini API Key For Weather Analytics:",
+        "ai_preferred_language": "Enter Preferred AI Response Language:",
     },
     "ar": {
         "choose_lang": "اختر لغتك:",
         "main_menu_title": "سكربت تثبيت NibrasShell",
         "install_deps_menu": "1. تثبيت المتطلبات",
         "install_local": "2. تثبيت الواجهة",
-        "uninstall": "3. حذف الواجهة",
-        "create_config": "4. إنشاء/تعديل ملف الإعدادات",
-        "exit": "5. خروج",
+        "update_quickshell": "3. تحديث QuickShell",
+        "uninstall": "4. حذف الواجهة",
+        "create_config": "5. إنشاء/تعديل ملف الإعدادات",
+        "exit": "6. خروج",
         "choose_option": "اختر أحد الخيارات: ",
         "distro_check_fail": "خطأ: هذا السكربت يدعم فقط توزيعات فيدورا وآرش لينكس.",
         "installing_deps": "جاري تثبيت المتطلبات...",
@@ -95,18 +115,32 @@ MESSAGES = {
         "prompt_country": "أدخل اسم دولتك: ",
         "prompt_use_prayer": "هل تريد تفعيل ودجت مواقيت الصلاة؟ (ن/ل): ",
         "config_saved": "تم حفظ ملف الإعدادات في ~/.nibrasshell.json",
+        "updating_quickshell": "جاري تحديث QuickShell...",
+        "update_complete": "اكتمل تحديث QuickShell.",
+        "pulling_updates": "جاري سحب آخر التحديثات من git...",
+        "copying_files": "جاري نسخ ملفات QuickShell...",
+        "dnf_error": "خطأ: فشل DNF في تثبيت الحزم.",
+        "dnf_conflict_prompt": "كيف تريد معالجة التعارض؟",
+        "opt_allow_erasing": "1. السماح باستبدال الحزم المتعارضة (--allowerasing)",
+        "opt_skip_broken": "2. تخطي الحزم المعطوبة/المتعارضة (--skip-broken)",
+        "opt_cancel": "3. إلغاء التثبيت",
+        "gemini_api_key": "أدخل مفتاح Gemini API: ",
+        "music_ai_api_key": "أدخل مفتاح Gemini API لتحليل الموسيقى: ",
+        "weather_ai_api_key": "أدخل مفتاح Gemini API لتحليل الطقس: ",
+        "ai_preferred_language": "أدخل اللغة المفضلة لاستجابة الذكاء الاصطناعي:",
     },
     "cs": {
         "choose_lang": "Vyberte si jazyk:",
         "main_menu_title": "Instalační skript NibrasShell",
         "install_deps_menu": "1. Nainstalovat závislosti",
         "install_local": "2. Nainstalovat NibrasShell",
-        "uninstall": "3. Odinstalovat NibrasShell",
-        "create_config": "4. Vytvořit/upravit konfiguraci uživatele",
-        "exit": "5. Ukončit",
+        "update_quickshell": "3. Aktualizovat QuickShell",
+        "uninstall": "4. Odinstalovat NibrasShell",
+        "create_config": "5. Vytvořit/upravit konfiguraci uživatele",
+        "exit": "6. Ukončit",
         "choose_option": "Vyberte možnost: ",
         "distro_check_fail": "Chyba: Tento skript podporuje pouze Fedoru, Void a Arch Linux.",
-        "installing_deps": "Instalace závislostí..." ,
+        "installing_deps": "Instalace závislostí...",
         "backing_up": "Zálohování existujících konfigurací...",
         "backup_created": "Záloha vytvořena v:",
         "installing_nibrasshell": "Kopírování a nastavení souborů NibrasShell...",
@@ -134,6 +168,19 @@ MESSAGES = {
         "prompt_country": "Zadejte svou zemi: ",
         "prompt_use_prayer": "Povolit widget modlitebních časů? (y/n): ",
         "config_saved": "Konfigurační soubor uložen do ~/.nibrasshell.json",
+        "updating_quickshell": "Aktualizace QuickShell...",
+        "update_complete": "Aktualizace QuickShell dokončena.",
+        "pulling_updates": "Stahování nejnovějších aktualizací z gitu...",
+        "copying_files": "Kopírování souborů QuickShell...",
+        "dnf_error": "Chyba: DNF se nepodařilo nainstalovat balíčky.",
+        "dnf_conflict_prompt": "Jak chcete vyřešit konflikt?",
+        "opt_allow_erasing": "1. Povolit vymazání konfliktních balíčků (--allowerasing)",
+        "opt_skip_broken": "2. Přeskočit poškozené balíčky (--skip-broken)",
+        "opt_cancel": "3. Zrušit instalaci",
+        "gemini_api_key": "Zadejte Gemini API klíč: ",
+        "music_ai_api_key": "Zadejte Gemini API klíč pro analýzu hudby: ",
+        "weather_ai_api_key": "Zadejte Gemini API klíč pro analýzu počasí: ",
+        "ai_preferred_language": "Zadejte preferovaný jazyk odpovědi AI:",
     },
 }
 
@@ -181,10 +228,41 @@ def detect_distro():
     return None
 
 
+# TODO: -> not in use yes, Needs testing
+def is_arch_based():
+    """
+    Is Arch or based on Arch
+    """
+    try:
+        with open("/etc/os-release", "r") as f:
+            lines = f.readlines()
+
+        os_info = {
+            k.strip(): v.strip().strip('"')
+            for k, v in (line.split("=", 1) for line in lines if "=" in line)
+        }
+
+        if os_info.get("ID") == "arch":
+            return True
+
+        if "arch" in os_info.get("ID_LIKE", "").split():
+            return True
+
+    except FileNotFoundError:
+        return False
+
+    return False
+
+
 # Function to install all necessary packages.
 def install_dependencies(distro, install_optional=False):
     print(f"{YELLOW}{msg('installing_deps')}{NC}")
-    if distro == "fedora":
+
+    # ---------------------------------------------------------
+    # 1. تثبيت حزم النظام (System Packages) حسب التوزيعة
+    # ---------------------------------------------------------
+    # TODO: -> change detection to a better way
+    if distro == "fedora" or distro == "nobara":
         print(YELLOW + "Enabling RPM Fusion and COPR repositories..." + NC)
         run_command_verbose(
             "sudo dnf install -y https://download1.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm https://download1.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$(rpm -E %fedora).noarch.rpm"
@@ -193,44 +271,101 @@ def install_dependencies(distro, install_optional=False):
         run_command_verbose(
             "sudo dnf copr enable -y errornointernet/quickshell"
         )
-        run_command_verbose(
-            "sudo dnf copr enable -y luisbocanegra/kde-material-you-colors"
-        )
-        run_command_verbose(
-            "sudo dnf install -y hyprland quickshell kde-material-you-colors"
-        )
+        run_command_verbose("sudo dnf install -y hyprland quickshell")
 
-        required_pkgs = "plasma-nm playerctl polkit-kde dolphin konsole brightnessctl gammastep wl-clipboard sysstat bc sassc plasma-systemsettings acpi fish gnome-bluetooth-libs power-profiles-daemon lm_sensors copyq vnstat nethogs swww jq"
+        required_pkgs = "plasma-nm playerctl polkit-kde dolphin konsole brightnessctl gammastep wl-clipboard cliphist sysstat bc plasma-systemsettings acpi fish lm_sensors copyq vnstat jq dbus-devel python3-devel python3.13 python3.13-devel"
         optional_pkgs = "strawberry easyeffects blueman telegram-desktop discord kvantum firefox"
+
         command = f"sudo dnf install -y {required_pkgs}"
         if install_optional:
             command += f" {optional_pkgs}"
-        print(YELLOW + "Installing main packages..." + NC)
+
+        command = f"{command} --skip-broken"
+
+        print(YELLOW + "Installing main packages (Fedora)..." + NC)
         run_command_verbose(command)
-    if distro == "arch":
-        print(YELLOW + "Starting Arch installer")
-        required_pkgs = "base-devel quickshell brightnessctl network-manager-applet konsole ark dolphin ffmpegthumbs playerctl polkit-kde-agent jq gammastep wl-clipboard hyprpicker hyprshot-git bc sysstat sassc systemsettings acpi fish kde-material-you-colors plasma5support plasma5-integration plasma-framework5 ttf-jetbrains-mono-nerd ttf-fantasque-nerd powerdevil gnome-bluetooth-3.0 power-profiles-daemon libjpeg6-turbo swww python-regex copyq swww"
+
+    elif is_arch_based():
+        print(YELLOW + "Starting Arch installer" + NC)
+        # في آرتش: python هي الحزمة الكاملة وتشمل headers (لا يوجد dev)
+        # حالياً python في آرتش هي 3.13
+        required_pkgs = "base-devel quickshell brightnessctl konsole ark dolphin ffmpegthumbs playerctl polkit-kde-agent jq gammastep wl-clipboard cliphist hyprpicker hyprshot-git bc sysstat systemsettings acpi fish kde-material-you-colors plasma5support plasma5-integration plasma-framework5 ttf-fantasque-nerd powerdevil libjpeg6-turbo python-regex copyq python python313"
         optional_pkgs = "strawberry easyeffects blueman telegram-desktop discord kvantum firefox"
-        command = f"yay -S {required_pkgs}"
-    if distro == "void":
-        # ... Missing kde-material-you-colors package
-        print(YELLOW + "Adding Void extra repository with hyprland (https://github.com/Encoded14/void-extra)" + NC)
+
+        command = f"yay -S --noconfirm {required_pkgs}"
+        if install_optional:
+            command += f" {optional_pkgs}"
+
+        print(YELLOW + "Installing main packages (Arch)..." + NC)
+        run_command_verbose(command)
+
+    elif distro == "void":
+        print(YELLOW + "Adding Void extra repository..." + NC)
         run_command_verbose(
             "echo repository=https://raw.githubusercontent.com/Encoded14/void-extra/repository-x86_64-glibc | sudo tee /etc/xbps.d/20-void-extra.conf"
         )
-        run_command_verbose(
-            "sudo xbps-install -S"
+        run_command_verbose("sudo xbps-install -Sy")
+
+        required_pkgs = "hyprland quickshell plasma-nm playerctl polkit-kde-agent dolphin konsole brightnessctl gammastep wl-clipboard sysstat bc sassc systemsettings acpi fish-shell gnome-bluetooth power-profiles-daemon lm_sensors CopyQ vnstat nethogs xz swww jq python3-devel dbus-devel glib-devel cmake"
+        optional_pkgs = (
+            "strawberry easyeffects blueman telegram-desktop kvantum firefox"
         )
-        required_pkgs = "hyprland quickshell plasma-nm playerctl polkit-kde-agent dolphin konsole brightnessctl gammastep wl-clipboard sysstat bc sassc systemsettings acpi fish-shell gnome-bluetooth power-profiles-daemon lm_sensors CopyQ vnstat nethogs xz swww jq"
-        # discord not packaged for Void Linux
-        optional_pkgs = "strawberry easyeffects blueman telegram-desktop kvantum firefox"
-        command = f"sudo xbps-install -y  {required_pkgs}"
+
+        command = f"sudo xbps-install -y {required_pkgs}"
         if install_optional:
             command += f" {optional_pkgs}"
-        print(YELLOW + "Installing main packages..." + NC)
+
+        print(YELLOW + "Installing main packages (Void)..." + NC)
         run_command_verbose(command)
 
+    # ---------------------------------------------------------
+    # ملاحظة: نتحقق أولاً من اسم الأمر المناسب لبايثون
+
+    python_cmd = get_python_command()
+    print(YELLOW + f"Detected Python command: {python_cmd}" + NC)
+
+    print(YELLOW + "Creating NibrasShell env..." + NC)
+    # --clear تحذف البيئة القديمة إذا كانت موجودة لضمان التوافق
+    run_command_verbose(
+        f"{python_cmd} -m venv ~/.cache/nibrasshell/venv --clear"
+    )
+
+    print(YELLOW + "Installing python needed packages using env pip..." + NC)
+    # تحديث أدوات pip داخل البيئة الوهمية (مهم جداً لحل مشكلة البناء)
+    run_command_verbose(
+        "~/.cache/nibrasshell/venv/bin/pip install --upgrade pip wheel setuptools"
+    )
+
+    # تثبيت المتطلبات
+    run_command_verbose(
+        f"~/.cache/nibrasshell/venv/bin/pip install -r {base_dir}/config/quickshell/scripts/python/requirements-3.13.txt"
+    )
+
     print(f"{GREEN}Dependencies installed successfully.{NC}")
+
+
+def get_python_command():
+    """
+    يبحث عن أمر بايثون المناسب للإصدار 3.13
+    """
+    # 1. المحاولة الأولى: البحث الصريح عن python3.13 (موجود في فيدورا وبعض التوزيعات)
+    if shutil.which("python3.13"):
+        return "python3.13"
+
+    # 2. المحاولة الثانية: التحقق مما إذا كان python3 هو الإصدار 3.13 (شائع في آرتش)
+    if shutil.which("python3"):
+        try:
+            version_output = subprocess.check_output(
+                ["python3", "--version"], text=True
+            ).strip()
+            # الناتج يكون مثلاً: Python 3.13.1
+            if "3.13" in version_output:
+                return "python3"
+        except Exception:
+            pass
+
+    # 3. إذا فشل كل شيء، نستخدم python3 ونأمل خيراً (أو يمكنك إرجاع None ورفع خطأ)
+    return "python3"
 
 
 # Function to back up existing configuration files.
@@ -339,6 +474,7 @@ def create_user_config_file():
     config["weatherLocation"] = input(msg("prompt_city"))
     config["city"] = config["weatherLocation"]
     config["country"] = input(msg("prompt_country"))
+    config["country"] = input(msg("prompt_country"))
 
     use_prayer_ans = input(msg("prompt_use_prayer")).lower()
     config["usePrayerTimes"] = use_prayer_ans in ["y", "yes", "ن", "نعم"]
@@ -347,6 +483,12 @@ def create_user_config_file():
     config["changePlasmaColor"] = True
     config["networkTimeout"] = 300
     config["networkInterval"] = 1000
+
+    config["geminiApiKey"] = input(msg("gemini_api_key"))
+    config["musicAiApiKey"] = input(msg("music_ai_api_key"))
+    config["weatherAiApiKey"] = input(msg("weather_ai_api_key"))
+    config["aiPreferredLanguage"] = input(msg("ai_preferred_language"))
+
     config["scripts"] = {
         "dynamicM3Py": None,
         "get_wallpapers": None,
@@ -456,6 +598,47 @@ def install_nibrasshell():
     print(f"{YELLOW}{msg('reboot_prompt')}{NC}")
 
 
+def update_quickshell():
+    print(f"{YELLOW}{msg('updating_quickshell')}{NC}")
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    home_dir = os.path.expanduser("~")
+    config_dir = os.path.join(home_dir, ".config")
+
+    # 1. Git Pull
+    print(f"{YELLOW}{msg('pulling_updates')}{NC}")
+    try:
+        # Change to the script's directory to run git pull
+        os.chdir(script_dir)
+        run_command_verbose("git pull")
+    except Exception as e:
+        print(f"{RED}Error during 'git pull': {e}{NC}")
+        return
+    finally:
+        # It's good practice to return to the original directory
+        # though it might not be strictly necessary if the script exits.
+        os.chdir(os.path.expanduser("~"))
+
+    # 2. Copy only the quickshell files
+    print(f"{YELLOW}{msg('copying_files')}{NC}")
+    source_quickshell_dir = os.path.join(script_dir, "config", "quickshell")
+    dest_quickshell_dir = os.path.join(config_dir, "quickshell")
+
+    if not os.path.exists(source_quickshell_dir):
+        print(f"{RED}Source directory not found: {source_quickshell_dir}{NC}")
+        return
+
+    # Create destination directory if it doesn't exist
+    os.makedirs(dest_quickshell_dir, exist_ok=True)
+
+    try:
+        shutil.copytree(
+            source_quickshell_dir, dest_quickshell_dir, dirs_exist_ok=True
+        )
+        print(f"{GREEN}{msg('update_complete')}{NC}")
+    except Exception as e:
+        print(f"{RED}Error copying files: {e}{NC}")
+
+
 # Function to uninstall NibrasShell and restore backups.
 def uninstall_nibrasshell():
     confirm = input(f"{YELLOW}{msg('uninstall_prompt')}{NC}").lower()
@@ -547,6 +730,7 @@ def main():
         print("=" * 45)
         print(msg("install_deps_menu"))
         print(msg("install_local"))
+        print(msg("update_quickshell"))
         print(msg("uninstall"))
         print(msg("create_config"))
         print(msg("exit"))
@@ -558,10 +742,12 @@ def main():
         elif choice == "2":
             install_nibrasshell()
         elif choice == "3":
-            uninstall_nibrasshell()
+            update_quickshell()
         elif choice == "4":
-            create_user_config_file()
+            uninstall_nibrasshell()
         elif choice == "5":
+            create_user_config_file()
+        elif choice == "6":
             break
         else:
             print(f"{RED}{msg('invalid_option')}{NC}")

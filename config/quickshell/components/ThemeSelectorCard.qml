@@ -8,6 +8,7 @@ import org.kde.kirigami as Kirigami
 import "root:/themes"
 import "root:/config/EventNames.js" as Events
 import "root:/config"
+import "root:/config/ConstValues.js" as Consts
 
 Rectangle {
     id: card
@@ -17,6 +18,7 @@ Rectangle {
     property string darkThemeName: ""
 
     property bool isSelected: false
+    property int innerRadiusDiv: 4
 
     width: parent.width
     radius: ThemeManager.selectedTheme.dimensions.elementRadius
@@ -55,32 +57,47 @@ Rectangle {
 
         RowLayout {
             Layout.fillWidth: true
-            spacing: 0
+            spacing: 3
 
             MButton {
                 text: ""
-                // iconText: "" // أيقونة الوضع الفاتح
                 Layout.fillWidth: true
-                topRightRadius: 0
-                bottomRightRadius: 0
+                Layout.preferredHeight: 25
                 isActive: ThemeManager.selectedTheme.themeName === card.lightThemeName
+                font.family: ThemeManager.selectedTheme.typography.iconFont
                 onClicked: {
                     ThemeManager.requestLoadTheme(card.lightThemeName);
-                    EventBus.emit(Events.CLOSE_LEFTBAR);
+                    closeMenu.start();
+                    // EventBus.emit(Events.CLOSE_LEFTBAR);
                 }
+
+                topRightRadius: ThemeManager.selectedTheme.dimensions.elementRadius / (isActive ? Consts.M3_BUTTON_RADIUS_DIVISOR : innerRadiusDiv)
+                bottomRightRadius: ThemeManager.selectedTheme.dimensions.elementRadius / (isActive ? Consts.M3_BUTTON_RADIUS_DIVISOR : innerRadiusDiv)
             }
 
             MButton {
                 text: "󰖔"
                 Layout.fillWidth: true
-                topLeftRadius: 0
-                bottomLeftRadius: 0
+                Layout.preferredHeight: 25
+                font.family: ThemeManager.selectedTheme.typography.iconFont
                 isActive: ThemeManager.selectedTheme.themeName === card.darkThemeName
                 onClicked: {
                     ThemeManager.requestLoadTheme(card.darkThemeName);
-                    EventBus.emit(Events.CLOSE_LEFTBAR);
+                    closeMenu.start();
                 }
+
+                bottomLeftRadius: ThemeManager.selectedTheme.dimensions.elementRadius / (isActive ? Consts.M3_BUTTON_RADIUS_DIVISOR : innerRadiusDiv)
+                topLeftRadius: ThemeManager.selectedTheme.dimensions.elementRadius / (isActive ? Consts.M3_BUTTON_RADIUS_DIVISOR : innerRadiusDiv)
             }
+        }
+    }
+
+    Timer {
+        id: closeMenu
+        interval: 600
+        repeat: false
+        onTriggered: {
+            EventBus.emit(Events.CLOSE_LEFTBAR);
         }
     }
 }

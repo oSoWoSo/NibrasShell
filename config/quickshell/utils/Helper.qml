@@ -3,6 +3,7 @@ pragma Singleton
 
 import QtQuick
 import Quickshell
+import Quickshell.Widgets
 
 import "root:/config" as Config
 
@@ -52,18 +53,25 @@ Singleton {
         return [scriptFile, `${path}`];
     }
 
-    function applyM3PlasmaColor(selectedWallpaperPath, themeMode) {
+    function applyM3PlasmaColor({
+        selectedWallpaperPath,
+        themeMode,
+        scheme,
+        chroma,
+        tone
+    }) {
         const scriptCommand = Config.App.scripts.python.dynamicM3Command;
-        const command = [...scriptCommand, `'${selectedWallpaperPath}'`, "-m", themeMode];
+        const command = [...scriptCommand, `'${selectedWallpaperPath}'`, "-m", themeMode, "--scheme", scheme, "--chroma", chroma, "--tone", tone];
+        console.info(command);
         return command;
     }
 
-    // TODO: -> Check this later
     function changePlasmaFont({
         font,
-        type = "font"
+        key,
+        group = "General"
     }) {
-        return ['kwriteconfig6', '--file', 'kdeglobals', '--group', 'General', '--key', type, '"JF Flat,11,-1,5,50,0,0,0,0,0"', font];
+        return ['kwriteconfig6', '--file', 'kdeglobals', '--group', group, '--key', key, font];
     }
 
     /**
@@ -87,6 +95,12 @@ Singleton {
         return ['kwriteconfig5', '--file', 'konsolerc', '--group', "'Desktop Entry'", '--key', 'DefaultProfile', profileName];
     }
 
+    // Applies profile immediately to currently opened Konsole sessions via DBus.
+    function applyKonsoleProfileToRunningSessions(profileName) {
+        const scriptCommand = Config.App.scripts.python.applyKonsoleProfileOpenSessionsCommand;
+        return [...scriptCommand, "--profile", `'${profileName}'`];
+    }
+
     // ==========================================================
     // ==                    GTK COMMANDS                      ==
     // ==========================================================
@@ -100,6 +114,11 @@ Singleton {
     function changeGtkTheme(themeName) {
         // This command sets the theme for both GTK3 and GTK4 in most modern environments.
         return ['gsettings', 'set', 'org.gnome.desktop.interface', 'gtk-theme', themeName];
+    }
+
+    function changeGtkColorSchemeTheme(themeName) {
+        // This command sets the theme for both GTK3 and GTK4 in most modern environments.
+        return ['gsettings', 'set', 'org.gnome.desktop.interface', 'color-scheme', `prefer-${themeName}`];
     }
 
     function removeOldGtk4Theme() {
@@ -305,5 +324,93 @@ Singleton {
             fullCommand.push("--end-date", endDate);
         }
         return fullCommand;
+    }
+
+    function wifiLiveUsageCommand({
+        limit = 8,
+        wifiInterface = Config.App.networkMonitor,
+        persist = true
+    }) {
+        const pythonCommand = Config.App.scripts.python.liveUsageCommand;
+        let fullCommand = [...pythonCommand, "--limit", `${limit}`, "--interface", `${wifiInterface}`];
+        if (!persist)
+            fullCommand.push("--no-persist");
+        return fullCommand;
+    }
+
+    function wifiLiveUsageSummaryCommand({
+        hours = 24,
+        top = 15,
+        wifiInterface = Config.App.networkMonitor
+    }) {
+        const pythonCommand = Config.App.scripts.python.liveUsageCommand;
+        return [...pythonCommand, "--mode", "summary", "--hours", `${hours}`, "--top", `${top}`, "--interface", `${wifiInterface}`];
+    }
+
+    // ==========================================================
+    // ==                 ICON UTILITIES                       ==
+    // ==========================================================
+
+    function toImageSource(pathOrUrl) {
+        if (!pathOrUrl || pathOrUrl === "")
+            return "";
+        if (pathOrUrl.startsWith("file://") || pathOrUrl.startsWith("qrc:") || pathOrUrl.startsWith("image://") || pathOrUrl.startsWith("data:") || pathOrUrl.startsWith("http://") || pathOrUrl.startsWith("https://"))
+            return pathOrUrl;
+        if (pathOrUrl.startsWith("/"))
+            return "file://" + pathOrUrl;
+        return pathOrUrl;
+    }
+
+    function isDirectImageSource(iconValue) {
+        if (!iconValue || iconValue === "")
+            return false;
+        return iconValue.startsWith("/") || iconValue.startsWith("file://") || iconValue.startsWith("qrc:") || iconValue.startsWith("image://") || iconValue.startsWith("data:") || iconValue.startsWith("http://") || iconValue.startsWith("https://");
+    }
+
+    function isFilePath(pathOrUrl) {
+        if (!pathOrUrl || pathOrUrl === "")
+            return false;
+        return pathOrUrl.startsWith("/") || pathOrUrl.startsWith("file://");
+    }
+
+    function iconNameFromAppId(appId) {
+        let id = appId || "application-x-executable";
+        let entry = DesktopEntries.byId(id);
+        return (entry && entry.icon) ? entry.icon : id;
+    }
+
+    function iconNameFromPath(pathOrUrl) {
+        if (!pathOrUrl || pathOrUrl === "")
+            return "";
+        if (pathOrUrl.startsWith("image://icon/")) {
+            let name = pathOrUrl.slice("image://icon/".length);
+            return name ? name : "";
+        }
+        let path = pathOrUrl;
+        if (path.startsWith("file://"))
+            path = path.slice(7);
+        if (!path.startsWith("/"))
+            return "";
+        let base = path.split("/").pop();
+        if (!base || base === "")
+            return "";
+        let dot = base.lastIndexOf(".");
+        if (dot > 0)
+            base = base.slice(0, dot);
+        return base;
+    }
+
+    function resolveThemedIcon(iconName, themedIconPaths, fallbackKey = "application-x-executable") {
+        if (!themedIconPaths)
+            return "";
+        let themedPath = themedIconPaths[iconName];
+        if (themedPath && themedPath !== "")
+            return toImageSource(themedPath);
+        if (fallbackKey && fallbackKey !== "") {
+            let fallbackPath = themedIconPaths[fallbackKey];
+            if (fallbackPath && fallbackPath !== "")
+                return toImageSource(fallbackPath);
+        }
+        return "";
     }
 }

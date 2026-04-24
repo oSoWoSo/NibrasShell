@@ -1,542 +1,62 @@
-# NibrasShell – Hyprland + Quickshell
+<div align="center">
 
-**Join our [Discord Server](https://discord.gg/EUcGgRGhrs) for discussions and support!**
+<img src="https://ahmedsaadi0.github.io/NibrasShell/assets/logo.jpeg" width="120" height="120" style="border-radius: 20px;">
 
-[![Discord](https://img.shields.io/badge/Discord-7289DA?style=for-the-badge&logo=discord&logoColor=white)](https://discord.gg/EUcGgRGhrs)
+# NibrasShell
 
-## This branch will use [quickshell](https://quickshell.outfoxxed.me/)
+**واجهة Hyprland حديثة، ذكية، ومبنية بشغف.**
+<br>
+_A modern, smart AI-integrated Hyprland shell built with passion._
 
-If you want to use ags_v1 change the branch to [main](https://github.com/AhmedSaadi0/nibrasshell/blob/main)
+---
 
-<details>
-<summary>العربية</summary>
+[![Website](https://img.shields.io/badge/Website-Visit%20Now-blue?style=for-the-badge&logo=firefox)](https://ahmedsaadi0.github.io/NibrasShell/index.html)
+[![Docs](https://img.shields.io/badge/Docs-Read%20Documentation-green?style=for-the-badge&logo=bookstack)](https://ahmedsaadi0.github.io/NibrasShell/docs.html)
+[![Discord](https://img.shields.io/badge/Discord-Join%20Us-7289da?style=for-the-badge&logo=discord)](https://discord.gg/EUcGgRGhrs)
 
-**ملاحظة:** هذه الإعدادات لا تزال في [مرحلة التطوير](https://github.com/AhmedSaadi0/nibrasshell/blob/quickshell/config/quickshell/todo.md)، وسأقوم بإضافة المزيد من الميزات بصورة مستمرة عندما يتاح لدي وقت أكثر.
+<br>
 
-### ملاحظة
+<img src="https://ahmedsaadi0.github.io/NibrasShell/assets/material-dark.png" alt="NibrasShell Preview" width="100%">
 
-يُفضل استخدام هذا الإعداد مع تطبيقات KDE للحصول على أفضل تجربة. إذا اخترت استخدام تطبيقات أخرى، فلا بأس بذلك، ولكن ستحتاج إلى ضبط الإعدادات يدوياً إذا لم يكن لديها ثيم مشابه لبقية التطبيقات.
+</div>
 
-### برامج ضرورية
+## 🌟 Why NibrasShell? / لماذا هذا المشروع؟
 
-- [Hyprland](https://wiki.hyprland.org/Getting-Started/Installation/)
-- [Quickshell](https://quickshell.outfoxxed.me/docs/guide/install-setup/)
-- network-manager-applet
-- playerctl
-- polkit-kde-agent or polkit-gnome
-- [FantasqueSansM Nerd Font](https://www.nerdfonts.com/font-downloads)
-- dolphin
-- konsole
-- brightnessctl
-- gammastep
-- wl-clipboard
-- hyprpicker
-- sysstat
-- bc
-- sassc
-- swww
-- systemsettings
-- acpi
-- fish
-- gnome-bluetooth-3.0
-- power-profiles-daemon
-- lm_sensors
-- copyq
-- [KDE Material You Colors](https://github.com/luisbocanegra/kde-material-you-colors)
-- vnstat
-- nethogs
+**It's just a hobby, nothing more.**
+I didn't build this interface as a product, but simply because I genuinely enjoy coding and having full control over my system.
 
-### برامج اختيارية
+**هي هواية، ليس إلا.**
+لم أقم ببناء هذه الواجهة كمنتج، بل لأنني أستمتع حقاً بكتابة الكود والتحكم في كل تفصيلة في نظامي.
 
-- strawberry
-- easyeffects
-- blueman
-- telegram-desktop
-- discord
-- kvantum
-- firefox
+## ✨ Features / المميزات
 
-## التثبيت
+- **🧠 AI System Daemon:** A highly advanced background service that silently monitors CPU, RAM, and Temp spikes. It runs autonomous diagnostics to catch resource-hungry processes and generates AI root-cause analysis without spamming notifications (Smart Cooldowns).
+- **💊 Smart Capsule:** An AI-powered interactive island for weather, media, and system stats.
+- **🎨 Deep Theming:** Full Material 3 dynamic coloring + support for GIF/Video wallpapers.
+- **🛠️ Control Hub:** A built-in Settings App to manage everything visually without touching config files.
+- **🚀 Performance:** Built on **Quickshell** & **Hyprland** for speed and fluidity, with asynchronous architecture to prevent UI freezing.
 
-### تثبيت البرامج لمستخدمي Arch:
+---
+
+- **🧠 مراقب النظام الذكي:** "جهاز عصبي" يعمل في الخلفية بصمت لمراقبة استهلاك الموارد والحرارة. يكتشف البرامج المسببة للضغط تلقائياً ويقدم تقرير تشخيصي فوري بالذكاء الاصطناعي (Root-cause analysis) مع نظام ذكي لمنع التنبيهات المزعجة والمكررة.
+- **💊 الكبسولة الذكية:** جزيرة تفاعلية مدعومة بالـ AI لعرض الطقس، الميديا، وحالة النظام.
+- **🎨 تخصيص عميق:** دعم كامل لألوان Material 3 الديناميكية، وخلفيات الفيديو والـ GIF.
+- **🛠️ مركز التحكم:** تطبيق إعدادات مدمج للتحكم بكل شيء بصرياً دون الحاجة لتعديل ملفات التكوين.
+- **🚀 الأداء:** مبنية على **Quickshell** و **Hyprland** للسرعة والسلاسة، مع بنية برمجية غير متزامنة (Asynchronous) تمنع تشنج الواجهة.
+
+## ⚡ Quick Install / التثبيت السريع
+
+To install on Arch, Fedora, or Nix (Automatic Script):
 
 ```bash
-# تثبيت البرامج المطلوبة
-yay -S base-devel brightnessctl network-manager-applet konsole blueman ark dolphin ffmpegthumbs playerctl kvantum polkit-kde-agent jq gufw tar gammastep wl-clipboard easyeffects hyprpicker hyprshot-git bc sysstat kitty sassc systemsettings acpi fish kde-material-you-colors plasma5support plasma5-integration plasma-framework5 ttf-jetbrains-mono-nerd ttf-fantasque-nerd powerdevil power-profiles-daemon libjpeg6-turbo swww python-regex copyq swww quickshell
-
-# تثبيت البرامج الاختيارية
-yay -S orchis-theme-git discord firefox visual-studio-code-bin nwg-look-bin qt5ct telegram-desktop strawberry
+git clone --depth 1 https://github.com/AhmedSaadi0/NibrasShell.git
+cd NibrasShell
+python install.py
 ```
 
-### مستخدمي Fedora
+For full manual installation steps, please visit the **[Documentation](https://ahmedsaadi0.github.io/NibrasShell/docs-install.html)**.
 
-```bash
-# Enable rpmfusion repository
-sudo dnf install https://download1.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm
-sudo dnf install https://download1.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$(rpm -E %fedora).noarch.rpm
+---
 
-# تثبيت البرامج المطلوبه وبرامج اخرى مثل دعم الصوتيات
-sudo dnf install ffmpeg --allowerasing
-sudo dnf install lsp-plugins calf rubberband zam-plugins breeze-gtk-gtk4 breeze-gtk-gtk3 kde-connect ffmpegthumbs bluedevil kde-gtk-config kde-settings-pulseaudio kdebugsettings kdenetwork-filesharing kdeplasma-addons plasma-nm plasma-systemmonitor plasma-vault sddm-breeze xwaylandvideobridge NetworkManager-l2tp NetworkManager-libreswan kde-settings-sddm kde-connect-libs imsettings imsettings-libs sddm network-manager-applet playerctl brightnessctl gammastep sysstat sassc plasma-systemsettings acpi fish gnome-bluetooth lm_sensors easyeffects blueman telegram-desktop kvantum konsole pulseaudio-utils polkit-qt polkit-kde gstreamer1-libav strawberry dnf-plugins-core gstreamer1-plugins-ugly gstreamer1-plugins-bad-free gstreamer1-plugins-bad-freeworld ffmpeg gstreamer1-plugins-base-devel vnstat nethogs retroarch inkscape gimp g4music android-tools plasma-integration-qt5 plasma-integration vlc-plugin-gstreamer vlc mpv kget kteatime gwenview unzip p7zip p7zip-plugins unrar copyq jq lsp-plugins lmms lsp-plugins-clap lsp-plugins-jack lsp-plugins-ladspa lv2-calf-plugins lv2-calf-plugins-gui lsp-plugins-lv2 lsp-plugins-vst lsp-plugins-vst3 lsp-plugins-jack lsp-plugins-gstreamer lsp-plugins lsp-plugins-clap gh
-
-# تفعيل مستودع هيبر لاند
-sudo dnf copr enable solopasha/hyprland
-sudo dnf install hyprland hyprshot hyprpicker wl-clipboard swww
-
-
-# تفعيل مستودع كويك شل
-sudo dnf copr enable errornointernet/quickshell
-sudo dnf install quickshell
-
-# تفعيل مستودع material-you-colors
-sudo dnf copr enable luisbocanegra/kde-material-you-colors
-sudo dnf install kde-material-you-colors
-
-# تثبيت plasma-desktop - غير الزامي
-sudo dnf install plasma-desktop ark kate dolphin
-```
-
-**ملاحطة:** إذا كنت تستخدم نظام تشغيل آخر غير أرش او فيدورا فسوف تحتاج إلى تثبيت جميع البرامج الضرورية. قد تختلف الخطوات بناءً على نوع توزيعتك.
-
-#### مثلا:
-
-- بالنسبة للتوزيعات القائمة على **دبيان/أوبونتو**، يمكنك تثبيت البرامج باستخدام `apt install` او البحث عن طريق `apt search hyprland`.
-- بالنسبة لبرامج ادارة الحزم الاخرى، قم بالبحث عن كل برنامج وتثبيته عبر مدير حزم نظامك.
-
-### متطلبات تاثير العمق للساعة في سطح المكتب
-
-- نحتاج مكتبه `rembg` و `pillow` لانشاء الصور ذات تاثير العمق
-
-```bash
-pip install rembg[gpu] pillow psutil
-```
-
-#### استخرج جميع الثيمات في المجلد `config/gtk-themes/` الى `~/.themes`
-
-### اعداد الملفات:
-
-    git clone https://github.com/AhmedSaadi0/NibrasShell.git
-
-    # عمل نسخة احتياطية لملفاتك الاصلية
-    mv ~/.config/hypr/ ~/.config/hypr-old
-    mv ~/.config/quickshell/ ~/.config/quickshell-old
-    mv ~/.config/wofi/ ~/.config/wofi-old
-    mv ~/.config/easyeffects ~/.config/easyeffects-old
-    mv ~/.config/fish/config.fish ~/.config/fish/config.back.fish
-
-    # نسخ الملفات
-    cp -r nibrasshell ~/.config/hypr
-    cp -r ~/.config/hypr/config/quickshell ~/.config/quickshell
-    cp -r ~/.config/hypr/config/wofi ~/.config/wofi
-    cp ~/.config/hypr/config/config.fish ~/.config/fish/config.fish
-
-    # اعداد الصلاحيات للملفات التنفيذية
-    sudo chmod +x ~/.config/hypr/scripts/*
-    sudo chmod +x ~/.config/quickshell/scripts/*
-
-    # نسخ اعدادت easyeffects
-    cp -r ~/.config/hypr/config/easyeffects ~/.config/easyeffects
-
-    # نسخ ملفات الثيمات
-    mkdir ~/.local/share/color-schemes/
-    mkdir ~/.local/share/konsole/
-    mkdir ~/.config/Kvantum/
-    mkdir ~/.config/qt5ct/
-    mkdir ~/.config/qt6ct/
-
-    cp -r ~/.config/hypr/config/plasma-colors/* ~/.local/share/color-schemes/
-    cp -r ~/.config/hypr/config/kvantum-themes/* ~/.config/Kvantum/
-    cp -r ~/.config/hypr/config/konsole/* ~/.local/share/konsole/
-    cp ~/.config/hypr/config/qt5ct.conf ~/.config/qt5ct/
-    cp ~/.config/hypr/config/qt6ct.conf ~/.config/qt6ct/
-
-    mkdir ~/.fonts
-    cp -r ~/.config/hypr/config/.fonts/* ~/.fonts
-
-    mkdir ~/.local/share/icons
-    tar xvf ~/.config/hypr/config/icons/BeautySolar.tar.gz -C ~/.local/share/icons
-    tar xvf ~/.config/hypr/config/icons/Delight-brown-dark.tar.gz -C ~/.local/share/icons
-    tar xvf ~/.config/hypr/config/icons/Gradient-Dark-Icons.tar.gz -C ~/.local/share/icons
-    tar xvf ~/.config/hypr/config/icons/Infinity-Dark-Icons.tar.gz -C ~/.local/share/icons
-    tar xvf ~/.config/hypr/config/icons/la-capitaine-icon-theme.tar.gz -C ~/.local/share/icons
-    tar xvf ~/.config/hypr/config/icons/Magma.tar.gz -C ~/.local/share/icons
-    tar xvf ~/.config/hypr/config/icons/oomox-aesthetic-dark.tar.gz -C ~/.local/share/icons
-    tar xvf ~/.config/hypr/config/icons/Vivid-Dark-Icons.tar.gz -C ~/.local/share/icons
-    tar xvf ~/.config/hypr/config/icons/Windows11-red-dark.tar.gz -C ~/.local/share/icons
-    tar xvf ~/.config/hypr/config/icons/Zafiro-Nord-Dark-Black.tar.gz -C ~/.local/share/icons
-
-### بامكانك تغير خط الجهاز الى 'JF Flat' اذا اردت ان تحصل على نفس الخط الذي لدي
-
-### تغيير الاعدادات
-
-- انشء ملف باسم `.nibrasshell.json` في مجلد الهوم
-
-```bash
-nvim .nibrasshell.json
-```
-
-- قم باضافة الاعدادات حسب جهازك ومنطقتك
-
-```json
-{
-  "username": "احمد الصعدي",
-  "profilePicture": "/home/ahmed/wallpapers/profile.png",
-  "networkMonitor": "wlp0s20f3",
-  "networkTimeout": 300,
-  "networkInterval": 1000,
-  "darkM3WallpaperPath": "/home/ahmed/wallpapers/dark",
-  "lightM3WallpaperPath": "/home/ahmed/wallpapers/light",
-  "weatherLocation": "sanaa",
-  "city": "sanaa",
-  "country": "yemen",
-  "usePrayerTimes": true,
-  "changePlasmaColor": true,
-  "scripts": {
-    "dynamicM3Py": null,
-    "get_wallpapers": null,
-    "createThumbnail": null,
-    "gtk_theme": null,
-    "systemInfo": null,
-    "deviceLocal": null,
-    "cpu": null,
-    "ram": null,
-    "deviceTemp": null,
-    "hardwareInfo": null,
-    "cpuUsage": null,
-    "ramUsage": null,
-    "cpuCores": null,
-    "devicesTemp2": null,
-    "playerctl": null
-  }
-}
-```
-
-</details>
-
-<details>
-
-<summary>English</summary>
-
-**Note:** This configuration is a [work in progress](https://github.com/AhmedSaadi0/nibrasshell/blob/quickshell/config/quickshell/todo.md), and I will continue to add more features as time permits.
-
-### Note
-
-It is recommended to use this setup with KDE applications for the best experience. If you choose to use other applications, that is fine, but you will need to theme them manually if they do not have a theme similar to the rest of the applications.
-
-### Required dependencies:
-
-- [Hyprland](https://wiki.hyprland.org/Getting-Started/Installation/)
-- [Quickshell](https://quickshell.outfoxxed.me/docs/guide/install-setup/)
-- network-manager-applet
-- playerctl
-- polkit-kde-agent or polkit-gnome
-- [FantasqueSansM Nerd Font](https://www.nerdfonts.com/font-downloads)
-- dolphin
-- konsole
-- brightnessctl
-- gammastep
-- wl-clipboard
-- hyprpicker
-- sysstat
-- bc
-- sassc
-- systemsettings
-- acpi
-- fish
-- gnome-bluetooth-3.0
-- power-profiles-daemon
-- lm_sensors
-- copyq
-- [KDE Material You Colors](https://github.com/luisbocanegra/kde-material-you-colors)
-- vnstat
-- nethogs
-
-### Optional dependencies:
-
-- strawberry
-- easyeffects
-- blueman
-- telegram-desktop
-- discord
-- kvantum
-- firefox
-
-## Installing:
-
-### Arch Users:
-
-```bash
-# Install required applications
-yay -S base-devel brightnessctl network-manager-applet konsole blueman ark dolphin ffmpegthumbs playerctl kvantum polkit-kde-agent jq gufw tar gammastep wl-clipboard easyeffects hyprpicker hyprshot-git bc sysstat kitty sassc systemsettings acpi fish kde-material-you-colors plasma5support plasma5-integration plasma-framework5 ttf-jetbrains-mono-nerd ttf-fantasque-nerd powerdevil power-profiles-daemon libjpeg6-turbo swww python-regex copyq swww quickshell
-
-# Install optional applications
-yay -S orchis-theme-git discord firefox visual-studio-code-bin nwg-look-bin qt5ct telegram-desktop strawberry
-```
-
-### Fedora
-
-```bash
-# Enable rpmfusion repository
-sudo dnf install https://download1.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm
-sudo dnf install https://download1.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$(rpm -E %fedora).noarch.rpm
-
-# Install needed apps with other supporting apps like media support
-sudo dnf install ffmpeg --allowerasing
-sudo dnf install lsp-plugins calf rubberband zam-plugins breeze-gtk-gtk4 breeze-gtk-gtk3 kde-connect ffmpegthumbs bluedevil kde-gtk-config kde-settings-pulseaudio kdebugsettings kdenetwork-filesharing kdeplasma-addons plasma-nm plasma-systemmonitor plasma-vault sddm-breeze xwaylandvideobridge NetworkManager-l2tp NetworkManager-libreswan kde-settings-sddm kde-connect-libs imsettings imsettings-libs sddm network-manager-applet playerctl brightnessctl gammastep sysstat sassc plasma-systemsettings acpi fish gnome-bluetooth lm_sensors easyeffects blueman telegram-desktop kvantum konsole pulseaudio-utils polkit-qt polkit-kde gstreamer1-libav strawberry dnf-plugins-core gstreamer1-plugins-ugly gstreamer1-plugins-bad-free gstreamer1-plugins-bad-freeworld ffmpeg gstreamer1-plugins-base-devel vnstat nethogs retroarch inkscape gimp g4music android-tools plasma-integration-qt5 plasma-integration vlc-plugin-gstreamer vlc mpv kget kteatime gwenview unzip p7zip p7zip-plugins unrar copyq jq lsp-plugins lmms lsp-plugins-clap lsp-plugins-jack lsp-plugins-ladspa lv2-calf-plugins lv2-calf-plugins-gui lsp-plugins-lv2 lsp-plugins-vst lsp-plugins-vst3 lsp-plugins-jack lsp-plugins-gstreamer lsp-plugins lsp-plugins-clap gh
-
-# Enable Hyprland repository
-sudo dnf copr enable solopasha/hyprland
-sudo dnf install hyprland hyprshot hyprpicker wl-clipboard swww
-
-# Enable Quickshell repository
-sudo dnf copr enable errornointernet/quickshell
-sudo dnf install quickshell
-
-# material-you-colors
-sudo dnf copr enable luisbocanegra/kde-material-you-colors
-sudo dnf install kde-material-you-colors
-
-# Install plasma-desktop for its apps - Optional
-sudo dnf install plasma-desktop ark kate dolphin
-```
-
-**Note:** If you use an operating system other than Arch or Fedora, you will need to install all required dependencies. The specific steps may vary depending on your distro.
-
-#### Example:
-
-- For **Debian/Ubuntu-based** systems, you can install dependencies using `apt install` or search using `apt search hyprland`.
-- For other package managers, search for each dependency and install using your system's package manager.
-
-### Depth effect requirements
-
-- we need `rembg` and `pillow` to create the needed images to apply depth effect
-
-```bash
-pip install rembg[gpu] pillow psutil
-```
-
-#### Extract all themes in `config/gtk-themes/` to `~/.themes`
-
-### Setting up files:
-
-    git clone https://github.com/AhmedSaadi0/NibrasShell.git
-
-    # backup your files
-    mv ~/.config/hypr/ ~/.config/hypr-old
-    mv ~/.config/quickshell/ ~/.config/quickshell-old
-    mv ~/.config/wofi/ ~/.config/wofi-old
-    mv ~/.config/easyeffects ~/.config/easyeffects-old
-    cp ~/.config/fish/config.fish ~/.config/fish/config.back.fish
-
-    # copy files
-    cp -r nibrasshell ~/.config/hypr
-    cp -r ~/.config/hypr/config/quickshell ~/.config/quickshell
-    cp -r ~/.config/hypr/config/wofi ~/.config/wofi
-    cp ~/.config/hypr/config/config.fish ~/.config/fish/config.fish
-
-    # set permissions for scripts
-    sudo chmod +x ~/.config/hypr/scripts/*
-    sudo chmod +x ~/.config/quickshell/scripts/*
-
-    # Copy easyeffects settings
-    cp -r ~/.config/hypr/config/easyeffects ~/.config/easyeffects
-
-    # copy theme files
-    mkdir ~/.local/share/color-schemes/
-    mkdir ~/.local/share/konsole/
-    mkdir ~/.config/Kvantum/
-    mkdir ~/.config/qt5ct/
-    mkdir ~/.config/qt6ct/
-
-    cp -r ~/.config/hypr/config/plasma-colors/* ~/.local/share/color-schemes/
-    cp -r ~/.config/hypr/config/kvantum-themes/* ~/.config/Kvantum/
-    cp -r ~/.config/hypr/config/konsole/* ~/.local/share/konsole/
-    cp ~/.config/hypr/config/qt5ct.conf ~/.config/qt5ct/
-    cp ~/.config/hypr/config/qt6ct.conf ~/.config/qt6ct/
-
-    mkdir ~/.fonts
-    cp -r ~/.config/hypr/config/.fonts/* ~/.fonts
-
-    mkdir ~/.local/share/icons
-    tar xvf ~/.config/hypr/config/icons/BeautySolar.tar.gz -C ~/.local/share/icons
-    tar xvf ~/.config/hypr/config/icons/Delight-brown-dark.tar.gz -C ~/.local/share/icons
-    tar xvf ~/.config/hypr/config/icons/Gradient-Dark-Icons.tar.gz -C ~/.local/share/icons
-    tar xvf ~/.config/hypr/config/icons/Infinity-Dark-Icons.tar.gz -C ~/.local/share/icons
-    tar xvf ~/.config/hypr/config/icons/la-capitaine-icon-theme.tar.gz -C ~/.local/share/icons
-    tar xvf ~/.config/hypr/config/icons/Magma.tar.gz -C ~/.local/share/icons
-    tar xvf ~/.config/hypr/config/icons/oomox-aesthetic-dark.tar.gz -C ~/.local/share/icons
-    tar xvf ~/.config/hypr/config/icons/Vivid-Dark-Icons.tar.gz -C ~/.local/share/icons
-    tar xvf ~/.config/hypr/config/icons/Windows11-red-dark.tar.gz -C ~/.local/share/icons
-    tar xvf ~/.config/hypr/config/icons/Zafiro-Nord-Dark-Black.tar.gz -C ~/.local/share/icons
-
-### You can change system fonts if you want to 'JF Flat' to have the same font I had
-
-### Change the settings
-
-- Create a file with the name `.nibrasshell.json` in your home directory.
-
-```bash
-nvim .nibrasshell.json
-```
-
-- Add these settings
-
-```json
-{
-  "username": "Ahmed Alsaadi",
-  "profilePicture": "/home/ahmed/wallpapers/profile.png",
-  "networkMonitor": "wlp0s20f3",
-  "networkTimeout": 300,
-  "networkInterval": 1000,
-  "darkM3WallpaperPath": "/home/ahmed/wallpapers/dark",
-  "lightM3WallpaperPath": "/home/ahmed/wallpapers/light",
-  "weatherLocation": "sanaa",
-  "city": "sanaa",
-  "country": "yemen",
-  "usePrayerTimes": true,
-  "changePlasmaColor": true,
-  "scripts": {
-    "dynamicM3Py": null,
-    "get_wallpapers": null,
-    "createThumbnail": null,
-    "gtk_theme": null,
-    "systemInfo": null,
-    "deviceLocal": null,
-    "cpu": null,
-    "ram": null,
-    "deviceTemp": null,
-    "hardwareInfo": null,
-    "cpuUsage": null,
-    "ramUsage": null,
-    "cpuCores": null,
-    "devicesTemp2": null,
-    "playerctl": null
-  }
-}
-```
-
-</details>
-
-# First look - لقطة اوليه
-
-#### Catppuccin dark
-
-<p align='center'>
-	<img alt='Catppuccin-dark' src='https://github.com/AhmedSaadi0/nibrasshell/blob/quickshell/screenshots/Catppuccin-dark.png'/>
-</p>
-
-<hr />
-
-#### M3
-
-<p align='center'>
-	<img alt='M3 Light screenshot' src='https://github.com/AhmedSaadi0/nibrasshell/blob/quickshell/screenshots/m3-light.png'/>
-</p>
-
-<p align='center'>
-	<img alt='M3 Light screenshot' src='https://github.com/AhmedSaadi0/nibrasshell/blob/quickshell/screenshots/m3-dark.png'/>
-</p>
-
-<hr />
-
-#### Nord
-
-<p align='center'>
-	<img alt='Nord' src='https://github.com/AhmedSaadi0/nibrasshell/blob/quickshell/screenshots/nord-light.png'/>
-</p>
-
-<p align='center'>
-	<img alt='Nord' src='https://github.com/AhmedSaadi0/nibrasshell/blob/quickshell/screenshots/nord-dark.png'/>
-</p>
-
-<hr />
-
-#### Dracula Light
-
-<p align='center'>
-	<img alt='Dracula' src='https://github.com/AhmedSaadi0/nibrasshell/blob/quickshell/screenshots/dracula-light.png'/>
-</p>
-
-<hr />
-
-#### Gruvbox
-
-<p align='center'>
-	<img alt='Gruvbox' src='https://github.com/AhmedSaadi0/nibrasshell/blob/quickshell/screenshots/gruvbox-light.png'/>
-</p>
-
-<p align='center'>
-	<img alt='Gruvbox' src='https://github.com/AhmedSaadi0/nibrasshell/blob/quickshell/screenshots/gruvbox-dark.png'/>
-</p>
-
-<hr />
-
-#### TokyoNight Dark
-
-<p align='center'>
-	<img alt='TokyoNight' src='https://github.com/AhmedSaadi0/nibrasshell/blob/quickshell/screenshots/tokyonight.png'/>
-</p>
-
-<hr />
-
-#### Settings
-
-[Watch a video](https://youtu.be/w7taDzj4_Y8)
-
-<p align='center'>
-	<img src='https://github.com/AhmedSaadi0/nibrasshell/blob/quickshell/screenshots/settings1.png'/>
-</p>
-
-<p align='center'>
-	<img src='https://github.com/AhmedSaadi0/nibrasshell/blob/quickshell/screenshots/settings2.png'/>
-</p>
-
-<p align='center'>
-	<img src='https://github.com/AhmedSaadi0/nibrasshell/blob/quickshell/screenshots/settings3.png'/>
-</p>
-
-<p align='center'>
-	<img src='https://github.com/AhmedSaadi0/nibrasshell/blob/quickshell/screenshots/settings4.png'/>
-</p>
-
-<p align='center'>
-	<img src='https://github.com/AhmedSaadi0/nibrasshell/blob/quickshell/screenshots/settings5.png'/>
-</p>
-
-<hr />
-
-### Credits
-
-#### Icons and GTK Themes
-
-<a href="https://www.pling.com/p/1327720/" title="Gruvbox icon theme">Gruvbox icon theme</a>
-
-<a href="https://www.pling.com/p/2110189/" title="Vivid-Dark-Icons">Vivid-Dark-Icons</a>
-
-<a href="https://www.pling.com/p/1279924/" title="Tela-icon-theme">Tela-icon-theme</a>
-
-<a href="https://www.pling.com/p/1937741/" title="Zafiro Nord Dark Blue">Zafiro Nord Dark Blue</a>
-
-<a href="https://www.pling.com/p/2014092/" title="Zafiro Nord Light Blue">Zafiro Nord Light Blue</a>
-
-<a href="https://www.pling.com/p/2259441/" title="Zafiro Dracula">Zafiro Dracula</a>
-
-<a href="https://www.pling.com/p/2090548/" title="Shades of purple Kvantum">Shades of purple Kvantum</a>
-
-<a href="https://www.pling.com/p/2074105/" title="Shades of purple GTK">Shades of purple GTK</a>
-
-<a href="https://www.pling.com/p/1681315/" title="TokyoNight">TokyoNight GTK Theme</a>
-
-<a href="https://www.pling.com/p/1687249/" title="Dracula">Dracula GTK Theme</a>
-
-#### PNG Icons
-
-<a href="https://www.flaticon.com/free-icons/foggy" title="foggy icons">Foggy icons created by Freepik - Flaticon</a>
-
-<a href="https://www.flaticon.com/free-icons/high-voltage" title="high voltage icons">High voltage icons created by Muhammad Atif - Flaticon</a>
-
-<a href="https://www.flaticon.com/free-icons/wind" title="wind icons">Wind icons created by Freepik - Flaticon</a>
-
-<a href="https://www.flaticon.com/free-icons/rain" title="rain icons">Rain icons created by Freepik - Flaticon</a>
-
-<a href="https://www.flaticon.com/free-icons/notification" title="notification icons">Notification icons created by Freepik - Flaticon</a>
+> **🔗 Stay Updated:**
+> Check out the [Development Roadmap](https://ahmedsaadi0.github.io/NibrasShell/roadmap.html) to see what I'm building next!

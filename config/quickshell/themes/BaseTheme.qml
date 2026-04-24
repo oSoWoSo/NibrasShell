@@ -23,13 +23,20 @@ PersistentProperties {
     property color _secondary: Kirigami.Theme.textColor
     property color _onSecondary: Kirigami.Theme.textColor
 
-    // property color _tertiary: Kirigami.Theme.negativeTextColor
-    // property color _onTertiary: Kirigami.Theme.textColor
-    //
-    // property color _error: Kirigami.Theme.negativeTextColor
-    // property color _onError: Kirigami.Theme.textColor
+    property color _tertiary: "#bd93f9"
+    property color _onTertiary: "#ffffff"
+
+    property color _error: Kirigami.Theme.negativeTextColor
+    property color _onError: "#ffffff"
+
+    property color _success: Kirigami.Theme.positiveTextColor
+    property color _onSuccess: "#ffffff"
+
+    property color _warning: "#ffb86c"
+    property color _onWarning: "#ffffff"
 
     // topbar
+    // TODO: -> these colors must be changed to a better way, maybe follow m3 naming
     property color _topbarColor: Kirigami.Theme.backgroundColor
     property color _topbarFgColor: Kirigami.Theme.textColor
 
@@ -59,6 +66,7 @@ PersistentProperties {
     // --------------------
     property int _baseRadius: 12
     property int _barHeight: 30
+    property int _leftBarWidth: 40
     property int _barBottomMargin: 10
     property int _barWidgetsHeight: 22
     property int _menuHeight: 900
@@ -102,6 +110,13 @@ PersistentProperties {
     // -------------------------
     property string _wallpaper: "linux.png"
     property bool _enableDynamicColoring: false
+    property bool _enableWallpaperBlur: false
+    property real _wallpaperBlurStrength: 0.9
+
+    property int _dynamicColoringSchemeVariant: 2
+    property real _dynamicColoringChromaMult: 2.5
+    property real _dynamicColoringToneMult: 1
+
     property bool _enableDynamicWallpapers: false
     property int _dynamicWallpapersInterval: 15 * 1000 * 60
     property string _dynamicWallpapersPath: ""
@@ -119,7 +134,7 @@ PersistentProperties {
 
     // Gaps & Layout
     property int _hyprGapsIn: 5
-    property string _hyprGapsOut: "10, 10, 10, 52"
+    property string _hyprGapsOut: "12, 15, 15, 52"
     property string _hyprLayout: "dwindle"
 
     // Animations
@@ -181,6 +196,18 @@ PersistentProperties {
         // }
         property alias onSecondary: root._onSecondary
 
+        property color tertiary: Qt.rgba(root._tertiary.r, root._tertiary.g, root._tertiary.b, root._alpha)
+        property alias onTertiary: root._onTertiary
+
+        property color error: Qt.rgba(root._error.r, root._error.g, root._error.b, root._alpha)
+        property alias onError: root._onError
+
+        property color success: Qt.rgba(root._success.r, root._success.g, root._success.b, root._alpha)
+        property alias onSuccess: root._onSuccess
+
+        property color warning: Qt.rgba(root._warning.r, root._warning.g, root._warning.b, root._alpha)
+        property alias onWarning: root._onWarning
+
         // Top Bar
         property color topbarColor: Qt.rgba(root._topbarColor.r, root._topbarColor.g, root._topbarColor.b, root._alpha)
         property color topbarFgColor: Qt.rgba(root._topbarFgColor.r, root._topbarFgColor.g, root._topbarFgColor.b, root._alpha)
@@ -212,6 +239,7 @@ PersistentProperties {
     readonly property var dimensions: QtObject {
         property alias baseRadius: root._baseRadius
         property alias barHeight: root._barHeight
+        property alias leftBarWidth: root._leftBarWidth
         property alias barBottomMargin: root._barBottomMargin
         property alias barWidgetsHeight: root._barWidgetsHeight
         property alias menuHeight: root._menuHeight
@@ -255,10 +283,16 @@ PersistentProperties {
 
         property alias enableAccentColoring: root._enableAccentColoring
         property alias enableDynamicColoring: root._enableDynamicColoring
+        property alias enableWallpaperBlur: root._enableWallpaperBlur
+        property alias wallpaperBlurStrength: root._wallpaperBlurStrength
         property alias enableDynamicWallpapers: root._enableDynamicWallpapers
         property alias dynamicWallpapersInterval: root._dynamicWallpapersInterval
         property alias dynamicWallpapersPath: root._dynamicWallpapersPath
         property alias selectedWallpaperIndex: root._selectedWallpaperIndex
+
+        property alias dynamicColoringSchemeVariant: root._dynamicColoringSchemeVariant
+        property alias dynamicColoringChromaMult: root._dynamicColoringChromaMult
+        property alias dynamicColoringToneMult: root._dynamicColoringToneMult
     }
 
     // --- Hyprland Configuration ---

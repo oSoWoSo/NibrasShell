@@ -1,54 +1,60 @@
+// bars/systemtray/SystemTray.qml
+
 import Quickshell.Services.SystemTray
 import QtQuick
+import "root:/themes"
 
-Item {
+Rectangle {
     id: root
 
-    readonly property Repeater items: items
+    readonly property var theme: ThemeManager.selectedTheme
+    readonly property Repeater items: trayRepeater
+
+    color: theme.colors.topbarBgColorV2
+    radius: theme.dimensions.elementRadius
 
     clip: true
-    visible: width > 0 && height > 0 // To avoid warnings about being visible with no size
+    visible: trayRepeater.count > 0
 
-    implicitWidth: layout.implicitWidth
-    implicitHeight: layout.implicitHeight
+    implicitWidth: layout.implicitWidth + (theme.dimensions.spacingMedium * 3)
+    // implicitHeight: layout.implicitHeight + (theme.dimensions.spacingSmall * 2)
+    implicitHeight: ThemeManager.selectedTheme.dimensions.barWidgetsHeight
 
     Row {
         id: layout
+        // توسيط الأيقونات داخل الخلفية
+        anchors.centerIn: parent
         spacing: 9
 
+        // حركة دخول الأيقونات الجديدة
         add: Transition {
             NumberAnimation {
-                properties: "scale"
+                properties: "scale, opacity"
                 from: 0
                 to: 1
                 duration: 300
-                easing.type: Easing.BezierSpline
-                // easing.bezierCurve:[]
+                easing.type: Easing.OutBack
             }
         }
 
         Repeater {
-            id: items
+            id: trayRepeater
             model: SystemTray.items
-            // The delegate for the repeater is defined in your other file.
-            // Assuming it's named 'TrayItem.qml'
             delegate: TrayItem {}
         }
     }
 
-    // Behavior on implicitWidth {
-    //     NumberAnimation {
-    //         duration: 300
-    //         easing.type: Easing.BezierSpline
-    //         // easing.bezierCurve: Appearance.anim.curves.emphasized
-    //     }
-    // }
-    //
-    // Behavior on implicitHeight {
-    //     NumberAnimation {
-    //         duration: 300
-    //         easing.type: Easing.BezierSpline
-    //         // easing.bezierCurve: Appearance.anim.curves.emphasized
-    //     }
-    // }
+    Behavior on implicitWidth {
+        NumberAnimation {
+            duration: 300
+            easing.type: Easing.OutCubic
+        }
+    }
+
+    Behavior on implicitHeight {
+        NumberAnimation {
+            duration: 300
+            easing.type: Easing.OutCubic
+        }
+    }
 }

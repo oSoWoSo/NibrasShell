@@ -1,150 +1,404 @@
 import QtQuick
 import QtQuick.Layouts
+import Quickshell
 import Quickshell.Hyprland
+import Quickshell.Io
+import Quickshell.Widgets
 
-import "../../themes"
+import "root:/themes"
+import "root:/config"
+import "root:/utils"
 
-Rectangle {
-    id: workspaceRectangle
+Item {
+    id: root
 
-    property int underlineHeight: 2
-    property int itemWidth: 33
-    property int fontSize: 18
-    property var activeIcons: ["󰋜", "󰿣", "󰂔", "󰉋", "󱙋", "󰆈", "󱍙", "󰺵", "󱋡", "󰙨"]
-    property var inActiveIcons: ["", "󰿤", "󰂕", "󰉖", "󱙌", "󰆉", "󱍚", "󰺶", "󱋢", "󰤑"]
-    property int focusedId: Hyprland.focusedWorkspace !== null ? Hyprland.focusedWorkspace.id : 0
-
-    readonly property var workspaceIds: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
-    readonly property var reversedWorkspaceIds: workspaceIds.slice().reverse()
-
-    property var focusedItem: null
-
+    width: mainRow.childrenRect.width + 25
     height: parent.height
-    width: rowLayout.implicitWidth + 20
-    radius: ThemeManager.selectedTheme.dimensions.elementRadius
-    color: ThemeManager.selectedTheme.colors.topbarBgColorV1
 
-    onFocusedIdChanged: {
-        for (let i = 0; i < rowLayout.children.length; ++i) {
-            if (rowLayout.children[i].workspaceId === focusedId) {
-                focusedItem = rowLayout.children[i];
+    property var activeIcons: App.activeWorkspacesIcons
+    property var inActiveIcons: App.inActiveWorkspacesIcons
+    property string currentIconTheme: (ThemeManager.selectedTheme && ThemeManager.selectedTheme.systemSettings) ? ThemeManager.selectedTheme.systemSettings.themeIcons : ""
+    property var themedIconPaths: ({})
+    property bool pendingResolve: false
+
+    function resolveWorkspaceIcon(appId, iconThemeName, resolvedPaths) {
+        void iconThemeName;
+        void resolvedPaths;
+
+        let iconName = Helper.iconNameFromAppId(appId);
+        return Helper.resolveThemedIcon(iconName, themedIconPaths);
+    }
+
+    function collectRequestedIconNames() {
+        let unique = {};
+        let toplevels = Hyprland.toplevels.values;
+        for (let i = 0; i < toplevels.length; i++) {
+            let win = toplevels[i];
+            let appId = win.appId || (win.lastIpcObject ? win.lastIpcObject.class : "unknown");
+            let iconName = Helper.iconNameFromAppId(appId);
+            if (iconName && iconName !== "")
+                unique[iconName] = true;
+        }
+        unique["application-x-executable"] = true;
+        return Object.keys(unique).sort();
+    }
+
+    onCurrentIconThemeChanged: {
+        themedIconPaths = ({});
+        iconResolveDebounce.restart();
+    }
+
+    Behavior on width {
+        NumberAnimation {
+            duration: 400
+            easing.type: Easing.OutCubic
+        }
+    }
+
+    Connections {
+        target: ThemeManager
+        function onSelectedThemeUpdated() {
+            iconResolveDebounce.restart();
+        }
+    }
+
+    // Connections {
+    //     target: Hyprland
+    //     ignoreUnknownSignals: true
+    //     // function onToplevelsChanged() {
+    //     //     iconResolveDebounce.restart();
+    //     // }
+    //     // function onActiveToplevelChanged() {
+    //     //     iconResolveDebounce.restart();
+    //     // }
+    // }
+
+    Connections {
+        target: Hyprland.toplevels
+        ignoreUnknownSignals: true
+        function onRowsInserted() {
+            iconResolveDebounce.restart();
+        }
+        // function onRowsRemoved() {
+        //     iconResolveDebounce.restart();
+        // }
+        // function onDataChanged() {
+        //     iconResolveDebounce.restart();
+        // }
+        // function onModelReset() {
+        //     iconResolveDebounce.restart();
+        // }
+    }
+
+    Component.onCompleted: iconResolveDebounce.start()
+
+    Timer {
+        id: iconResolveDebounce
+        interval: 250
+        repeat: false
+        onTriggered: {
+            const icons = collectRequestedIconNames();
+
+            if (!currentIconTheme || currentIconTheme === "")
                 return;
+            if (!icons || icons.length === 0) {
+                themedIconPaths = ({});
+                return;
+            }
+            if (themedIconResolver.running) {
+                pendingResolve = true;
+                return;
+            }
+
+            themedIconResolver.command = [App.pythonPath, App.pythonScriptsPath + "/resolve_theme_icons.py", "--theme", currentIconTheme, "--icons-json", JSON.stringify(icons)];
+            themedIconResolver.running = true;
+        }
+    }
+
+    Process {
+        id: themedIconResolver
+        running: false
+
+        stdout: StdioCollector {
+            onStreamFinished: {
+                try {
+                    const parsed = JSON.parse(this.text.toString());
+                    root.themedIconPaths = parsed || {};
+                    console.info("[Workspaces] Icon map refreshed for theme:", currentIconTheme, "count:", Object.keys(root.themedIconPaths).length);
+                } catch (e) {
+                    console.warn("[Workspaces] Failed to parse resolved icons JSON:", e);
+                }
+            }
+        }
+
+        onExited: (exitCode, exitStatus) => {
+            void exitStatus;
+            if (exitCode !== 0) {
+                console.warn("[Workspaces] Icon resolver exited with code:", exitCode);
+            }
+        }
+
+        onRunningChanged: {
+            if (!running && pendingResolve) {
+                pendingResolve = false;
+                iconResolveDebounce.restart();
             }
         }
     }
 
-    Component.onCompleted: {
-        for (let i = 0; i < rowLayout.children.length; ++i) {
-            if (rowLayout.children[i].workspaceId === focusedId) {
-                focusedItem = rowLayout.children[i];
-                return;
-            }
-        }
-    }
-
-    RowLayout {
-        id: rowLayout
-        anchors.top: parent.top
-        spacing: 5
+    Row {
+        id: mainRow
+        anchors.verticalCenter: parent.verticalCenter
+        spacing: 4
 
         Repeater {
-            // --- (تحسين) ---
-            // استخدام الخاصية المحسوبة مسبقًا
-            model: workspaceRectangle.reversedWorkspaceIds
+            model: activeIcons.length
 
-            delegate: MouseArea {
-                id: workspaceMouseArea
-                width: workspaceRectangle.itemWidth
-                height: workspaceRectangle.height
+            delegate: Rectangle {
+                id: workspaceBox
+                readonly property int wsId: index + 1
+                readonly property real defaultRadius: ThemeManager.selectedTheme.dimensions.elementRadius
 
-                readonly property int workspaceId: modelData
-                readonly property bool isFocused: workspaceId === workspaceRectangle.focusedId
-                readonly property bool exists: Hyprland.workspaces.values.some(ws => ws.id === workspaceId)
-                readonly property color defaultItemColor: {
-                    // --- (تم التعديل) ---
-                    // استخدام الربط المباشر بالثيم
-                    if (isFocused || exists) {
-                        ThemeManager.selectedTheme ? ThemeManager.selectedTheme.colors.primary : null;
-                    } else {
-                        palette.text.alpha(0.4);
+                z: dragActive ? 100 : index
+                property bool dragActive: false
+
+                // --- منطق البيانات ---
+                readonly property var groupedApps: {
+                    let apps = {};
+                    let toplevels = Hyprland.toplevels.values;
+                    for (let i = 0; i < toplevels.length; i++) {
+                        let win = toplevels[i];
+                        if (win.workspace && win.workspace.id === wsId) {
+                            let id = win.appId || (win.lastIpcObject ? win.lastIpcObject.class : "unknown");
+
+                            let rawAddr = String(win.address);
+                            let addr = rawAddr.startsWith("0x") ? rawAddr : "0x" + rawAddr;
+
+                            if (!apps[id]) {
+                                apps[id] = {
+                                    id: id,
+                                    count: 1,
+                                    address: addr
+                                };
+                            } else {
+                                apps[id].count++;
+                            }
+                        }
+                    }
+                    return Object.values(apps);
+                }
+
+                readonly property bool hasWindows: groupedApps.length > 0
+                readonly property bool isWsActive: Hyprland.focusedWorkspace && Hyprland.focusedWorkspace.id === wsId
+
+                property bool ready: false
+
+                height: Math.round(root.height)
+                width: ready ? Math.round(contentRow.width + 12) : 0
+                opacity: ready ? 1 : 0
+                scale: ready ? 1 : 0.8
+
+                clip: false
+
+                topRightRadius: index === activeIcons.length - 1 ? defaultRadius : defaultRadius / 4
+                bottomRightRadius: index === activeIcons.length - 1 ? defaultRadius : defaultRadius / 4
+                topLeftRadius: defaultRadius / 4
+                bottomLeftRadius: defaultRadius / 4
+
+                color: isWsActive ? ThemeManager.selectedTheme.colors.primary : ThemeManager.selectedTheme.colors.topbarBgColorV1
+
+                Component.onCompleted: ready = true
+
+                Behavior on width {
+                    NumberAnimation {
+                        duration: 450
+                        easing.type: Easing.OutCubic
                     }
                 }
-                readonly property string icon: isFocused ? workspaceRectangle.activeIcons[workspaceId - 1] ?? "" : workspaceRectangle.inActiveIcons[workspaceId - 1] ?? ""
+                Behavior on opacity {
+                    NumberAnimation {
+                        duration: 300
+                    }
+                }
+                Behavior on scale {
+                    NumberAnimation {
+                        duration: 400
+                        easing.type: Easing.OutBack
+                    }
+                }
 
-                cursorShape: Qt.PointingHandCursor
-                onClicked: Hyprland.dispatch(`workspace ${workspaceMouseArea.workspaceId}`)
-
-                Text {
-                    id: iconText
+                Row {
+                    id: contentRow
                     anchors.centerIn: parent
-
-                    text: workspaceMouseArea.icon
-
-                    font.pixelSize: workspaceRectangle.fontSize
-                    font.family: ThemeManager.selectedTheme.typography.iconFont
-                    // --- (تم التعديل) ---
-                    // استخدام الربط المباشر بالثيم
-                    color: workspaceMouseArea.containsMouse ? ThemeManager.selectedTheme.colors.primary : workspaceMouseArea.defaultItemColor
-
-                    Behavior on color {
-                        ColorAnimation {
-                            duration: 250
-                            easing.type: Easing.InOutQuad
+                    spacing: 6
+                    opacity: workspaceBox.width > 20 ? 1 : 0
+                    Behavior on opacity {
+                        NumberAnimation {
+                            duration: 200
                         }
                     }
 
-                    onTextChanged: {
-                        if (exists) {
-                            fadeTransition.restart();
+                    Repeater {
+                        model: workspaceBox.groupedApps
+
+                        delegate: Item {
+                            width: 22
+                            height: 22
+
+                            MouseArea {
+                                id: dragArea
+                                anchors.fill: parent
+                                cursorShape: Qt.PointingHandCursor
+                                drag.target: tile
+                                drag.axis: Drag.XAndYAxis
+                                drag.smoothed: true
+                                drag.threshold: 5
+
+                                onPressed: {
+                                    tile.storedAddress = modelData.address;
+                                    workspaceBox.dragActive = true;
+                                }
+
+                                onClicked: {
+                                    if (!isWsActive)
+                                        Hyprland.dispatch(`workspace ${wsId}`);
+                                }
+
+                                onReleased: {
+                                    tile.Drag.drop();
+                                    tile.x = 0;
+                                    tile.y = 0;
+                                    workspaceBox.dragActive = false;
+                                }
+
+                                onCanceled: {
+                                    workspaceBox.dragActive = false;
+                                }
+
+                                Item {
+                                    id: tile
+                                    width: 22
+                                    height: 22
+
+                                    property string storedAddress: ""
+
+                                    Drag.active: dragArea.drag.active
+                                    Drag.keys: ["window"]
+                                    Drag.hotSpot.x: 11
+                                    Drag.hotSpot.y: 11
+
+                                    Behavior on x {
+                                        enabled: !dragArea.drag.active
+                                        NumberAnimation {
+                                            duration: 200
+                                            easing.type: Easing.OutQuad
+                                        }
+                                    }
+                                    Behavior on y {
+                                        enabled: !dragArea.drag.active
+                                        NumberAnimation {
+                                            duration: 200
+                                            easing.type: Easing.OutQuad
+                                        }
+                                    }
+
+                                    IconImage {
+                                        id: appIcon
+                                        anchors.centerIn: parent
+                                        width: 16
+                                        height: 16
+                                        mipmap: true
+                                        source: root.resolveWorkspaceIcon(modelData.id, root.currentIconTheme, root.themedIconPaths)
+                                        asynchronous: true
+                                    }
+
+                                    Rectangle {
+                                        visible: modelData.count > 1
+                                        anchors.top: appIcon.top
+                                        anchors.right: appIcon.right
+                                        anchors.topMargin: -4
+                                        anchors.rightMargin: -4
+                                        width: 12
+                                        height: 12
+                                        radius: ThemeManager.selectedTheme.dimensions.elementRadius / 4
+                                        color: isWsActive ? ThemeManager.selectedTheme.colors.onPrimary : ThemeManager.selectedTheme.colors.primary
+                                        border.width: 1
+                                        border.color: workspaceBox.color
+
+                                        Text {
+                                            anchors.centerIn: parent
+                                            text: modelData.count
+                                            font.pixelSize: 8
+                                            font.bold: true
+                                            color: isWsActive ? ThemeManager.selectedTheme.colors.primary : ThemeManager.selectedTheme.colors.onPrimary
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
 
-                    SequentialAnimation {
-                        id: fadeTransition
-                        running: false
-                        PropertyAnimation {
-                            target: iconText
-                            property: "opacity"
-                            to: 0.5
-                            duration: 150
-                            easing.type: Easing.InQuad
+                    Item {
+                        visible: !workspaceBox.hasWindows
+                        width: 20
+                        height: 22
+                        MouseArea {
+                            anchors.fill: parent
+                            cursorShape: Qt.PointingHandCursor
+                            onClicked: Hyprland.dispatch(`workspace ${wsId}`)
                         }
-                        PropertyAnimation {
-                            target: iconText
-                            property: "opacity"
-                            to: 1
-                            duration: 150
-                            easing.type: Easing.OutQuad
+                        Text {
+                            anchors.centerIn: parent
+                            text: isWsActive ? activeIcons[wsId - 1] || "" : inActiveIcons[wsId - 1] || ""
+                            font.family: ThemeManager.selectedTheme.typography.iconFont
+                            font.pixelSize: 14
+                            color: isWsActive ? ThemeManager.selectedTheme.colors.onPrimary : ThemeManager.selectedTheme.colors.topbarFgColorV1
                         }
                     }
                 }
-            }
-        }
-    }
 
-    Rectangle {
-        id: slidingIndicator
+                DropArea {
+                    anchors.fill: parent
+                    keys: ["window"]
 
-        x: workspaceRectangle.focusedItem ? rowLayout.x + workspaceRectangle.focusedItem.x : -width
-        width: workspaceRectangle.focusedItem ? workspaceRectangle.focusedItem.width : 0
+                    Rectangle {
+                        anchors.fill: parent
+                        radius: ThemeManager.selectedTheme.dimensions.elementRadius / 4
+                        color: "transparent"
+                        border.color: parent.containsDrag ? ThemeManager.selectedTheme.colors.primary : "transparent"
+                        border.width: 2
+                        visible: parent.containsDrag
 
-        height: workspaceRectangle.underlineHeight
-        anchors.bottom: parent.bottom
-        // --- (تم التعديل) ---
-        // التأكد من استخدام الربط المباشر هنا أيضًا
-        color: ThemeManager.selectedTheme.colors.primary
-        radius: height / 2
+                        Rectangle {
+                            anchors.fill: parent
+                            radius: parent.radius
+                            color: parent.border.color
+                            opacity: 0.1
+                        }
+                    }
 
-        Behavior on x {
-            NumberAnimation {
-                duration: 250
-                easing.type: Easing.InOutCubic
-            }
-        }
-        Behavior on width {
-            NumberAnimation {
-                duration: 250
-                easing.type: Easing.InOutCubic
+                    onDropped: drop => {
+                        if (drop.source && drop.source.storedAddress) {
+                            let winAddress = drop.source.storedAddress;
+
+                            if (!winAddress.startsWith("0x")) {
+                                winAddress = "0x" + winAddress;
+                            }
+
+                            Hyprland.dispatch(`movetoworkspacesilent ${wsId},address:${winAddress}`);
+                            drop.accept();
+                        } else {
+                            console.warn("[Drop Fail] Source or address missing");
+                        }
+                    }
+                }
+
+                MouseArea {
+                    anchors.fill: parent
+                    z: -1
+                    cursorShape: Qt.PointingHandCursor
+                    onClicked: Hyprland.dispatch(`workspace ${wsId}`)
+                }
             }
         }
     }

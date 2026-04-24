@@ -3,42 +3,77 @@ pragma ComponentBehavior: Bound
 
 import Quickshell
 import QtQuick
+import QtQml
 import QtQuick.Window
 import Quickshell.Io
+import Quickshell.Hyprland
 
-import "root:/bars"
 import "root:/windows/leftwindow"
+import "root:/windows/smart_capsule"
+import "root:/windows/settings"
+import "root:/windows/cheatsheet"
+import "root:/windows/bottomlauncher"
+import "root:/windows/poweroption"
+import "root:/windows/overlay"
+import "root:/bars"
 import "root:/osd"
 import "root:/utils"
 import "root:/config"
 import "root:/desktop"
 import "root:/themes"
-import "root:/shadows"
-import "root:/windows/settings"
+// import "root:/shadows"
+import "root:/services"
+import "root:/windows/smart_capsule/logic"
+import "root:/config/ConstValues.js" as Consts
+import "root:/config/EventNames.js" as Events
 
 ShellRoot {
     id: shellRoot
 
+    // --- Properties ---
     property var settingsWindowInstance: null
-    property var volumeInstance: null
-    property var brightnessInstance: null
     property var notificationsInstance: null
+    readonly property var _networkService: NetworkService
     readonly property var _selectedTheme: ThemeManager.selectedTheme
+
     signal openLeftPanelRequested(int selectedIndex)
 
     Component.onCompleted: {
-        if (ThemeManager.isInitialThemeReady) {
-            console.log("ThemeManager was already ready. Activating main UI immediately.");
-            activateMainUI();
-        } else {
-            console.log("Waiting for ThemeManager's initialThemeReady signal...");
-        }
+        Qt.uiLanguage = "ar";
+        NetworkService.syncTimers();
     }
+
+    // // --- Initialization Logic ---
+    // Component.onCompleted: {
+    //     if (ThemeManager.isInitialThemeReady) {
+    //         activateMainUI();
+    //     } else {
+    //         console.log("Waiting for ThemeManager...");
+    //     }
+    // }
 
     Connections {
         target: ThemeManager
         function onInitialThemeReady() {
-            console.log("ShellRoot received 'initialThemeReady' signal! Activating main UI.");
+            startComp.start();
+        }
+    }
+
+    Connections {
+        target: Hyprland
+
+        function onRawEvent(event) {
+            if (event.name === "openwindow") {
+                Hyprland.refreshToplevels();
+            }
+        }
+    }
+
+    Timer {
+        id: startComp
+        interval: 1000
+        repeat: false
+        onTriggered: {
             activateMainUI();
         }
     }
@@ -48,41 +83,32 @@ ShellRoot {
             return;
 
         mainUiLoader.active = true;
-
-        if (!settingsWindowInstance) {
-            settingsWindowInstance = settingsWindowComponent.createObject(shellRoot);
-            if (!settingsWindowInstance) {
-                console.error("CRITICAL: Failed to create the Settings window component!");
-            }
-        }
-
-        if (!volumeInstance) {
-            volumeInstance = volumeComponent.createObject(shellRoot);
-            if (!volumeInstance) {
-                console.error("CRITICAL: Failed to create the Volume OSD component!");
-            }
-        }
-
-        if (!brightnessInstance) {
-            brightnessInstance = brightnessComponent.createObject(shellRoot);
-            if (!brightnessInstance) {
-                console.error("CRITICAL: Failed to create the Brightness OSD component!");
-            }
-        }
-
-        if (!notificationsInstance) {
-            notificationsInstance = notificationsComponent.createObject(shellRoot);
-            if (!notificationsInstance) {
-                console.error("CRITICAL: Failed to create the Notifications component!");
-            }
-        }
-
+        initializeGlobalWindows();
         splashTimer.start();
     }
 
+    function initializeGlobalWindows() {
+        // دالة مساعدة لإنشاء النوافذ العامة مرة واحدة
+        const createGlobalWindow = (component, name) => {
+            const instance = component.createObject(shellRoot);
+            if (!instance)
+                console.error(`CRITICAL: Failed to create ${name}!`);
+            return instance;
+        };
+
+        if (!settingsWindowInstance) {
+            settingsWindowInstance = createGlobalWindow(settingsWindowComponent, "Settings Window");
+        }
+
+        if (!notificationsInstance) {
+            notificationsInstance = createGlobalWindow(notificationsComponent, "Notifications");
+        }
+    }
+
+    // --- Splash Screen ---
     Timer {
         id: splashTimer
-        interval: 1500
+        interval: 1000
         repeat: false
         onTriggered: {
             splashScreen.visible = false;
@@ -98,11 +124,14 @@ ShellRoot {
         }
     }
 
+    // --- Main UI Loader ---
     Loader {
         id: mainUiLoader
         anchors.fill: parent
         active: false
         opacity: 0.0
+        sourceComponent: mainUiComponent
+
         Behavior on opacity {
             NumberAnimation {
                 duration: 500
@@ -111,59 +140,66 @@ ShellRoot {
 
         onStatusChanged: {
             if (status === Loader.Ready) {
-                console.log("Main UI component loaded successfully. Fading in.");
+                console.log("Main UI Loaded.");
                 mainUiLoader.opacity = 1.0;
             } else if (status === Loader.Error) {
-                console.error("CRITICAL: Failed to load the main UI component!");
+                console.error("CRITICAL: Failed to load Main UI!");
             }
         }
-
-        sourceComponent: mainUiComponent
     }
 
+    // --- Components Definitions ---
     Component {
         id: settingsWindowComponent
         Main {}
     }
 
     Component {
-        id: volumeComponent
-        Volume {}
-    }
-    Component {
-        id: brightnessComponent
-        Brightness {}
-    }
-    Component {
         id: notificationsComponent
         Notifications {}
     }
 
-    Component {
-        id: widgetsComponent
-        Widgets {}
-    }
-
+    // --- Main UI Structure ---
     Component {
         id: mainUiComponent
         Item {
 
             Variants {
                 model: Quickshell.screens
-                LeftbarShadowsLayer {
+                Desktop {
                     required property ShellScreen modelData
                     screen: modelData
                 }
             }
 
+            // 1. Dynamic Island
             Variants {
                 model: Quickshell.screens
-                TopbarShadowsLayer {
+                SmartCapsule {
+                    id: dynamicIsland
                     required property ShellScreen modelData
                     screen: modelData
                 }
             }
 
+            // 2. Shadows Layers
+            // Variants {
+            //     model: Quickshell.screens
+            //     LeftbarShadowsLayer {
+            //         required property ShellScreen modelData
+            //         screen: modelData
+            //     }
+            // }
+
+            // Variants {
+            //     model: Quickshell.screens
+            //     TopbarShadowsLayer {
+            //         required property ShellScreen modelData
+            //         screen: modelData
+            //     }
+            // }
+
+            // 3. Bars & Corners
             Variants {
                 model: Quickshell.screens
                 Topbar {
@@ -173,32 +209,32 @@ ShellRoot {
                 }
             }
 
-            Variants {
-                model: Quickshell.screens
-                TopRightCorner {
-                    id: topRightCorners
-                    required property ShellScreen modelData
-                    screen: modelData
-                }
-            }
-
-            Variants {
-                model: Quickshell.screens
-                TopLeftCorner {
-                    id: topLeftCorners
-                    required property ShellScreen modelData
-                    screen: modelData
-                }
-            }
-
-            Variants {
-                model: Quickshell.screens
-                BottomLeftCorner {
-                    id: bottomLeftCorner
-                    required property ShellScreen modelData
-                    screen: modelData
-                }
-            }
+            // Variants {
+            //     model: Quickshell.screens
+            //     TopRightCorner {
+            //         id: topRightCorners
+            //         required property ShellScreen modelData
+            //         screen: modelData
+            //     }
+            // }
+            //
+            // Variants {
+            //     model: Quickshell.screens
+            //     TopLeftCorner {
+            //         id: topLeftCorners
+            //         required property ShellScreen modelData
+            //         screen: modelData
+            //     }
+            // }
+            //
+            // Variants {
+            //     model: Quickshell.screens
+            //     BottomLeftCorner {
+            //         id: bottomLeftCorner
+            //         required property ShellScreen modelData
+            //         screen: modelData
+            //     }
+            // }
 
             Variants {
                 model: Quickshell.screens
@@ -209,87 +245,93 @@ ShellRoot {
                 }
             }
 
+            Variants {
+                model: Quickshell.screens
+                OverlayWindow {
+                    required property ShellScreen modelData
+                    screen: modelData
+                }
+            }
+
+            // 4. Global Panels (Single instance)
             LeftWindowFull {
                 id: leftPanelFull
             }
+            Cheatsheet {
+                id: cheatsheetPanel
+            }
+            BottomLauncher {
+                id: bottomLauncherPanel
+            }
+            PowerMenuWindow {
+                id: powerMenuWindow
+                // visible is handled via the connection below
+            }
 
+            // Event listener for bottom launcher toggle from LeftBar
+            Connections {
+                target: null
+                Component.onCompleted: {
+                    EventBus.on(Events.TOGGLE_BOTTOM_LAUNCHER, () => {
+                        bottomLauncherPanel.toggle();
+                    }, shellRoot);
+                }
+            }
+
+            // 5. IPC Handler (Refactored Logic)
             IpcHandler {
                 id: handler
                 target: "LeftBar"
 
-                property bool isMenuOpen: false
-                property int targetedMenu: 0
                 property int openedMenu: LeftMenuStatus.selectedIndex
 
-                function toggleMenu() {
-                    let menuToOpen = targetedMenu;
+                function toggleMenu(targetIndex: int) {
+                    let index = Number(targetIndex);
+                    let menuToOpen = index;
 
-                    if (targetedMenu === openedMenu) {
+                    if (index === openedMenu) {
                         menuToOpen = -1;
                     }
 
                     LeftMenuStatus.changeIndex(menuToOpen);
+                    EventBus.emit(Events.OPEN_LEFTBAR, menuToOpen);
                 }
 
                 function toggleDashboardMenu() {
-                    targetedMenu = 0;
-                    toggleMenu();
+                    toggleMenu(Consts.DASHBOARD_MENU_INDEX);
                 }
-
-                function toggleNotificatoinsMenu() {
-                    targetedMenu = 1;
-                    toggleMenu();
+                function toggleNotificationsMenu() {
+                    toggleMenu(Consts.NOTIFICATION_MENU_INDEX);
                 }
-
                 function toggleWeatherMenu() {
-                    targetedMenu = 2;
-                    toggleMenu();
+                    toggleMenu(Consts.WEATHER_MENU_INDEX);
                 }
-
-                function toggleMonotoringMenu() {
-                    targetedMenu = 3;
-                    toggleMenu();
+                function toggleMonitoringMenu() {
+                    toggleMenu(Consts.MONIROTS_MENU_INDEX);
                 }
-
                 function toggleNetworkingMenu() {
-                    targetedMenu = 4;
-                    toggleMenu();
+                    toggleMenu(Consts.NETWORK_MENU_INDEX);
                 }
-
+                function toggleClipboardMenu() {
+                    toggleMenu(Consts.CLIPBOARD_MENU_INDEX);
+                }
+                function toggleTodoMenu() {
+                    toggleMenu(Consts.TODO_MENU_INDEX);
+                }
+                function toggleAiMenu() {
+                    toggleMenu(Consts.AI_BOT_MENU_INDEX);
+                }
                 function toggleApplauncherMenu() {
-                    targetedMenu = 6;
-                    toggleMenu();
-                }
-            }
-            Variants {
-                model: Quickshell.screens
-
-                Item {
-                    id: widgetContainer
-                    anchors.fill: parent
-
-                    required property ShellScreen modelData
-
-                    Component.onCompleted: {
-                        const newWidgets = widgetsComponent.createObject(widgetContainer, {
-                            // "modelData": modelData,
-                            "screen": modelData
-                        });
-
-                        if (!newWidgets) {
-                            console.error("Failed to create Widgets for screen:", modelData.name);
-                        }
+                    if (App.useBottomLauncher) {
+                        bottomLauncherPanel.toggle();
+                    } else {
+                        toggleMenu(Consts.APPLICATIONS_MENU_INDEX);
                     }
                 }
+                function togglePowerMenu() {
+                    EventBus.emit(Events.TOGGLE_POWER_MENU);
+                }
             }
-            // Variants {
-            //     model: Quickshell.screens
-            //     Widgets {
-            //         id: desktopWidgets
-            //         required property ShellScreen modelData
-            //         screen: modelData
-            //     }
-            // }
         }
     }
 }
